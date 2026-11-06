@@ -1,0 +1,45 @@
+{
+  "format": "quiznight-quiz",
+  "version": 1,
+  "meta": { "title": "Quiz Night — Exemplo", "date": "2026-11-06", "venue": "Bar madeirense" },
+  "approximation": {
+    "question": "Qual a altitude do Pico Ruivo, o ponto mais alto da Madeira?",
+    "answer": "1862",
+    "unit": "metros",
+    "notes": "",
+    "source": "",
+    "image": "",
+    "verified": false
+  },
+  "madeira": {
+    "question": "Em que século foi descoberto (oficialmente) o arquipélago da Madeira pelos portugueses?",
+    "answer": "Século XV (1419)",
+    "options": [],
+    "notes": "João Gonçalves Zarco e Tristão Vaz Teixeira chegaram a Porto Santo em 1418 e à Madeira em 1419.",
+    "source": "",
+    "image": "",
+    "difficulty": "1",
+    "verified": false,
+    "porto": false
+  },
+  "themes": [
+    { "id": "historia", "name": "História", "questions": [
+      { "question": "Em que ano caiu o Muro de Berlim?", "answer": "1989", "difficulty": "1", "verified": true }
+    ] },
+    { "id": "ciencias", "name": "Ciências Exatas", "questions": [
+      { "question": "Qual é o símbolo químico do tungsténio?", "answer": "W", "options": ["Tu", "W", "Tg", "Ts"], "difficulty": "2", "verified": true }
+    ] },
+    { "id": "desporto", "name": "Desporto e Jogos", "questions": [] },
+    { "id": "musica", "name": "Música, Cinema e TV", "questions": [] },
+    { "id": "arte", "name": "Arte e Design", "questions": [
+      { "type": "match", "question": "Faz corresponder cada pintor ao seu país natal.", "points": 2,
+        "pairs": [ { "left": "Frida Kahlo", "right": "México" }, { "left": "Edvard Munch", "right": "Noruega" }, { "left": "Joan Miró", "right": "Espanha" } ],
+        "difficulty": "1", "verified": true }
+    ] },
+    { "id": "literatura", "name": "Literatura, Filosofia e Ciências Sociais", "questions": [] },
+    { "id": "atualidade", "name": "Atualidade", "questions": [] },
+    { "id": "geografia", "name": "Locais e Geografia", "questions": [
+      { "question": "Que ponte ferroviária do Porto, inaugurada em 1877, foi construída pela empresa de Gustave Eiffel?", "answer": "Ponte D. Maria Pia", "difficulty": "2", "verified": false, "porto": true }
+    ] }
+  ]
+}

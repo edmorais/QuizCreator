@@ -1,0 +1,207 @@
+[
+ {
+  "type": "open",
+  "question": "Que cantor e compositor norte-americano recebeu o Nobel da Literatura em 2016?",
+  "answer": "Bob Dylan",
+  "difficulty": "1",
+  "notes": "Não foi a Estocolmo receber o prémio pessoalmente na cerimónia."
+ },
+ {
+  "type": "open",
+  "question": "Que economista inglês usou o exemplo do vinho português e dos tecidos ingleses para explicar a vantagem comparativa?",
+  "answer": "David Ricardo",
+  "difficulty": "3",
+  "notes": "Em \"Princípios de Economia Política e Tributação\" (1817)."
+ },
+ {
+  "type": "choice",
+  "question": "Que corrente filosófica considera o prazer o bem supremo da vida?",
+  "options": [
+   "Estoicismo",
+   "Cinismo",
+   "Hedonismo",
+   "Ceticismo"
+  ],
+  "correct": 2,
+  "difficulty": "2",
+  "notes": "Do grego \"hedoné\", prazer."
+ },
+ {
+  "type": "open",
+  "question": "Que médico polaco criou o esperanto, em 1887?",
+  "answer": "Ludwik Zamenhof",
+  "difficulty": "3",
+  "notes": "Assinou a primeira obra como \"Doktoro Esperanto\" (o que tem esperança)."
+ },
+ {
+  "type": "open",
+  "question": "Quem escreveu \"Os Lusíadas\"?",
+  "answer": "Luís Vaz de Camões",
+  "difficulty": "1",
+  "notes": "A epopeia narra a viagem de Vasco da Gama à Índia."
+ },
+ {
+  "type": "match",
+  "question": "Faz corresponder cada psicólogo ao conceito a que está mais associado.",
+  "pairs": [
+   {
+    "left": "Carl Gustav Jung",
+    "right": "Arquétipos"
+   },
+   {
+    "left": "B. F. Skinner",
+    "right": "Condicionamento operante"
+   },
+   {
+    "left": "Leon Festinger",
+    "right": "Dissonância cognitiva"
+   },
+   {
+    "left": "Solomon Asch",
+    "right": "Conformidade ao grupo"
+   }
+  ],
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Que português assumiu em 2017 o cargo de secretário-geral da ONU?",
+  "answer": "António Guterres",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que pensador chinês deu origem a uma doutrina centrada na ética, no respeito pela família e na ordem social?",
+  "answer": "Confúcio",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que escritor francês escreveu \"Os Três Mosqueteiros\"?",
+  "answer": "Alexandre Dumas",
+  "difficulty": "1"
+ },
+ {
+  "type": "choice",
+  "question": "Que poema de \"Mensagem\" começa com \"Ó mar salgado, quanto do teu sal / São lágrimas de Portugal!\"?",
+  "options": [
+   "O Mostrengo",
+   "O Infante",
+   "Padrão",
+   "Mar Português"
+  ],
+  "correct": 3,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que romance de Eça de Queirós opõe a vida sofisticada de Jacinto em Paris à vida simples em Tormes?",
+  "answer": "A Cidade e as Serras",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que escritor norte-americano criou Tom Sawyer e Huckleberry Finn?",
+  "answer": "Mark Twain",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Como se chama uma palavra ou frase que se lê da mesma maneira da esquerda para a direita e da direita para a esquerda?",
+  "answer": "Palíndromo",
+  "difficulty": "1",
+  "notes": "Exemplos: \"radar\" ou \"A torre da derrota\"."
+ },
+ {
+  "type": "choice",
+  "question": "Qual destas obras foi escrita por Arthur Schopenhauer?",
+  "options": [
+   "Fenomenologia do Espírito",
+   "O Mundo como Vontade e Representação",
+   "Crítica da Razão Prática",
+   "A Gaia Ciência"
+  ],
+  "correct": 1,
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Em que livro de Rudyard Kipling vive o menino Mowgli, criado por lobos?",
+  "answer": "O Livro da Selva",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que nome se dá ao movimento intelectual europeu do século XVIII, conhecido como \"Século das Luzes\"?",
+  "answer": "Iluminismo",
+  "difficulty": "1"
+ },
+ {
+  "type": "choice",
+  "question": "Que poeta brasileiro escreveu \"Morte e Vida Severina\"?",
+  "options": [
+   "Manuel Bandeira",
+   "Ferreira Gullar",
+   "João Cabral de Melo Neto",
+   "Carlos Drummond de Andrade"
+  ],
+  "correct": 2,
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Que corrente filosófica defende que todo o conhecimento provém da experiência sensível?",
+  "answer": "Empirismo",
+  "difficulty": "2",
+  "notes": "Opõe-se ao racionalismo de Descartes e Leibniz."
+ },
+ {
+  "type": "choice",
+  "question": "Que dramaturgo grego escreveu \"Rei Édipo\" e \"Antígona\"?",
+  "options": [
+   "Ésquilo",
+   "Eurípides",
+   "Aristófanes",
+   "Sófocles"
+  ],
+  "correct": 3,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que paradoxo, associado ao cretense Epiménides, nasce de alguém dizer que está a mentir?",
+  "answer": "Paradoxo do mentiroso",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Em que ano foi adotada pela ONU a Declaração Universal dos Direitos Humanos?",
+  "answer": "1948",
+  "difficulty": "2",
+  "notes": "Foi aprovada em Paris, a 10 de dezembro."
+ },
+ {
+  "type": "open",
+  "question": "Que código civil, promulgado em França em 1804, influenciou o direito de muitos países europeus?",
+  "answer": "Código Napoleónico (Código Civil francês)",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que teoria política, comum a Hobbes, Locke e Rousseau, explica a origem do Estado por um acordo entre os indivíduos?",
+  "answer": "Contrato social (contratualismo)",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que nome se dá à doutrina de Descartes que separa a mente (substância pensante) do corpo (substância extensa)?",
+  "answer": "Dualismo",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que herói grego liderou os Argonautas na busca do Velo de Ouro?",
+  "answer": "Jasão",
+  "difficulty": "2"
+ }
+]

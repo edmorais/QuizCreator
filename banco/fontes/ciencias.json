@@ -1,0 +1,220 @@
+[
+ {
+  "type": "open",
+  "question": "De que rei viking da Dinamarca vem o nome da tecnologia Bluetooth?",
+  "answer": "Haroldo Dente-Azul (Harald Bluetooth)",
+  "difficulty": "3",
+  "notes": "Unificou tribos dinamarquesas, tal como a tecnologia «unifica» aparelhos. O logótipo junta as suas iniciais em runas."
+ },
+ {
+  "type": "choice",
+  "question": "Em que ano a Apple apresentou o primeiro iPhone?",
+  "options": [
+   "2004",
+   "2009",
+   "2007",
+   "2011"
+  ],
+  "correct": 2,
+  "difficulty": "2",
+  "notes": "Apresentado por Steve Jobs em janeiro de 2007."
+ },
+ {
+  "type": "open",
+  "question": "Qual é o valor aproximado da aceleração da gravidade à superfície da Terra, em metros por segundo ao quadrado?",
+  "answer": "9,8",
+  "difficulty": "2",
+  "notes": "Na Lua é cerca de seis vezes menor (1,6 m/s²)."
+ },
+ {
+  "type": "open",
+  "question": "Que astrónomo norte-americano, que dá nome a um famoso telescópio espacial, mostrou em 1929 que o Universo está em expansão?",
+  "answer": "Edwin Hubble",
+  "difficulty": "2",
+  "notes": "O belga Georges Lemaître tinha chegado a conclusão semelhante dois anos antes."
+ },
+ {
+  "type": "open",
+  "question": "Como se chama a galáxia onde se encontra o Sistema Solar?",
+  "answer": "Via Láctea",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que instrumento, inventado por Evangelista Torricelli em 1643, mede a pressão atmosférica?",
+  "answer": "Barómetro",
+  "difficulty": "3",
+  "notes": "O primeiro barómetro usava uma coluna de mercúrio."
+ },
+ {
+  "type": "open",
+  "question": "Que físico norte-americano dirigiu o laboratório de Los Alamos, onde foi construída a primeira bomba atómica?",
+  "answer": "J. Robert Oppenheimer",
+  "difficulty": "1",
+  "notes": "A sua vida inspirou o filme «Oppenheimer» (2023), de Christopher Nolan."
+ },
+ {
+  "type": "open",
+  "question": "Quanto é 15% de 200?",
+  "answer": "30",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que nome se dá a uma substância que acelera uma reação química sem ser consumida por ela?",
+  "answer": "Catalisador",
+  "difficulty": "2",
+  "notes": "Os carros têm um catalisador no escape para reduzir gases poluentes."
+ },
+ {
+  "type": "open",
+  "question": "Que planeta é conhecido como «planeta vermelho»?",
+  "answer": "Marte",
+  "difficulty": "1",
+  "notes": "A cor vem do óxido de ferro (ferrugem) no solo."
+ },
+ {
+  "type": "open",
+  "question": "Que físico italiano construiu o primeiro reator nuclear, em Chicago, em 1942?",
+  "answer": "Enrico Fermi",
+  "difficulty": "3",
+  "notes": "O elemento férmio tem o seu nome."
+ },
+ {
+  "type": "open",
+  "question": "Em que central nuclear, na atual Ucrânia, ocorreu em 1986 o pior acidente nuclear da história?",
+  "answer": "Chernobil",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que expressão, proposta por John McCarthy nos anos 50, designa a capacidade das máquinas de imitar o raciocínio humano?",
+  "answer": "Inteligência artificial",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Quantos vértices tem uma pirâmide de base quadrada?",
+  "answer": "5",
+  "difficulty": "2",
+  "notes": "Quatro na base e um no topo."
+ },
+ {
+  "type": "choice",
+  "question": "Quantos gramas tem, aproximadamente, uma libra (unidade de massa anglo-saxónica)?",
+  "options": [
+   "Cerca de 454 g",
+   "Cerca de 254 g",
+   "Cerca de 654 g",
+   "Cerca de 1000 g"
+  ],
+  "correct": 0,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Quanto é um terço mais um sexto?",
+  "answer": "Um meio (1/2)",
+  "difficulty": "2",
+  "notes": "2/6 + 1/6 = 3/6 = 1/2."
+ },
+ {
+  "type": "open",
+  "question": "Que irmãos franceses fizeram em Paris, em 1895, a primeira sessão pública de cinema?",
+  "answer": "Irmãos Lumière",
+  "difficulty": "1",
+  "notes": "Auguste e Louis Lumière. Curiosamente, «lumière» significa «luz»."
+ },
+ {
+  "type": "open",
+  "question": "Quanto vale o seno de 30 graus?",
+  "answer": "0,5 (1/2)",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que cientista de origem alemã criou a escala de temperatura ainda usada nos Estados Unidos?",
+  "answer": "Daniel Gabriel Fahrenheit",
+  "difficulty": "1",
+  "notes": "Também inventou o termómetro de mercúrio, em 1714."
+ },
+ {
+  "type": "open",
+  "question": "Em que dia do ano ocorre, aproximadamente, o solstício de verão no hemisfério norte?",
+  "answer": "21 de junho",
+  "difficulty": "1",
+  "notes": "É o dia mais longo do ano em Portugal."
+ },
+ {
+  "type": "choice",
+  "question": "Que aparelho portátil da Sony, lançado em 1979, permitiu ouvir cassetes na rua com auscultadores?",
+  "options": [
+   "Discman",
+   "Walkman",
+   "Watchman",
+   "Handycam"
+  ],
+  "correct": 1,
+  "difficulty": "2"
+ },
+ {
+  "type": "choice",
+  "question": "Em qual destes meios o som se propaga mais depressa?",
+  "options": [
+   "Ar",
+   "Água",
+   "Vácuo",
+   "Aço"
+  ],
+  "correct": 3,
+  "difficulty": "2",
+  "notes": "No aço chega a cerca de 5900 m/s; no vácuo nem sequer se propaga."
+ },
+ {
+  "type": "match",
+  "question": "Faz corresponder cada planeta à sua posição a contar do Sol.",
+  "pairs": [
+   {
+    "left": "Mercúrio",
+    "right": "1.º"
+   },
+   {
+    "left": "Marte",
+    "right": "4.º"
+   },
+   {
+    "left": "Saturno",
+    "right": "6.º"
+   },
+   {
+    "left": "Úrano",
+    "right": "7.º"
+   },
+   {
+    "left": "Neptuno",
+    "right": "8.º"
+   }
+  ],
+  "difficulty": "1"
+ },
+ {
+  "type": "choice",
+  "question": "Em que ano foi descoberto o primeiro planeta a orbitar uma estrela semelhante ao Sol?",
+  "options": [
+   "1965",
+   "1985",
+   "1995",
+   "2005"
+  ],
+  "correct": 2,
+  "difficulty": "3",
+  "notes": "51 Pegasi b, descoberto pelos suíços Michel Mayor e Didier Queloz, Nobel da Física em 2019."
+ },
+ {
+  "type": "open",
+  "question": "Como se chama o buraco negro supermassivo que se encontra no centro da Via Láctea?",
+  "answer": "Sagittarius A*",
+  "difficulty": "3",
+  "notes": "A sua primeira imagem foi divulgada em 2022."
+ }
+]

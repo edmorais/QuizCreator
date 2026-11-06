@@ -1,0 +1,205 @@
+[
+ {
+  "type": "open",
+  "question": "Como se chama o monumento megalítico de Wiltshire, em Inglaterra, formado por grandes blocos de pedra dispostos em círculo?",
+  "answer": "Stonehenge",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que nome se dá ao período da Pré-História em que surgem a agricultura, a pastorícia e as primeiras aldeias sedentárias?",
+  "answer": "Neolítico",
+  "difficulty": "1",
+  "notes": "Significa \"pedra nova\", por causa da pedra polida."
+ },
+ {
+  "type": "open",
+  "question": "Quem foi a última rainha do Egito ptolemaico, amante de Júlio César e de Marco António?",
+  "answer": "Cleópatra (VII)",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que arqueólogo britânico descobriu o túmulo de Tutankhamon em 1922, no Vale dos Reis?",
+  "answer": "Howard Carter",
+  "difficulty": "2",
+  "notes": "A expedição era financiada por Lord Carnarvon, que morreu pouco depois, alimentando a lenda da \"maldição do faraó\"."
+ },
+ {
+  "type": "choice",
+  "question": "Que povo da Antiguidade construiu a cidade de Petra, escavada na rocha, na atual Jordânia?",
+  "options": [
+   "Nabateus",
+   "Fenícios",
+   "Hititas",
+   "Assírios"
+  ],
+  "correct": 0,
+  "difficulty": "3"
+ },
+ {
+  "type": "choice",
+  "question": "Que cidade foi conquistada e saqueada pelos próprios cruzados na Quarta Cruzada, em 1204?",
+  "options": [
+   "Jerusalém",
+   "Acre",
+   "Damasco",
+   "Constantinopla"
+  ],
+  "correct": 3,
+  "difficulty": "2"
+ },
+ {
+  "type": "choice",
+  "question": "Que cidade foi a capital do reino visigodo da Península Ibérica?",
+  "options": [
+   "Córdova",
+   "Toledo",
+   "Sevilha",
+   "Mérida"
+  ],
+  "correct": 1,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que imperador do Sacro Império, conhecido pela barba ruiva, morreu afogado num rio da Anatólia a caminho da Terceira Cruzada?",
+  "answer": "Frederico I Barba-Ruiva",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que rei de Portugal mandou arrancar o coração aos assassinos de Inês de Castro?",
+  "answer": "D. Pedro I",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Em que cidade foi Inês de Castro assassinada, em 1355?",
+  "answer": "Coimbra",
+  "difficulty": "2",
+  "notes": "Segundo a lenda, as lágrimas derramadas deram origem à Fonte das Lágrimas, na Quinta das Lágrimas."
+ },
+ {
+  "type": "match",
+  "question": "Faz corresponder cada cientista à sua descoberta ou teoria.",
+  "pairs": [
+   {
+    "left": "Nicolau Copérnico",
+    "right": "Heliocentrismo"
+   },
+   {
+    "left": "Johannes Kepler",
+    "right": "Órbitas elípticas dos planetas"
+   },
+   {
+    "left": "Isaac Newton",
+    "right": "Lei da gravitação universal"
+   },
+   {
+    "left": "William Harvey",
+    "right": "Circulação do sangue"
+   }
+  ],
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que rei português desapareceu na batalha de Alcácer-Quibir, em 1578?",
+  "answer": "D. Sebastião",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que batalha de 1665, perto de Vila Viçosa, foi decisiva para a vitória portuguesa na Guerra da Restauração?",
+  "answer": "Montes Claros",
+  "difficulty": "3"
+ },
+ {
+  "type": "choice",
+  "question": "Em que ano foi decapitado o rei Carlos I de Inglaterra?",
+  "options": [
+   "1588",
+   "1649",
+   "1688",
+   "1715"
+  ],
+  "correct": 1,
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Em que arquipélago foi morto Fernão de Magalhães, em 1521?",
+  "answer": "Filipinas",
+  "difficulty": "2",
+  "notes": "Morreu na ilha de Mactan, num confronto com o chefe local Lapu-Lapu."
+ },
+ {
+  "type": "open",
+  "question": "Que imperador alemão abdicou em novembro de 1918?",
+  "answer": "Guilherme II",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que marechal francês comandou a terceira invasão de Portugal?",
+  "answer": "Massena",
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Que nome tem o movimento político iniciado em 1851, com o duque de Saldanha, que trouxe estabilidade ao liberalismo português?",
+  "answer": "Regeneração",
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Que Presidente da República português, líder da \"República Nova\", foi assassinado em dezembro de 1918?",
+  "answer": "Sidónio Pais",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que guerra opôs, entre 1899 e 1902, os britânicos aos colonos de origem holandesa na África do Sul?",
+  "answer": "Guerra dos Bóeres",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que líder pacifista conduziu a Índia à independência, conquistada em 1947?",
+  "answer": "Mahatma Gandhi",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que polícia política do Estado Novo, rebatizada DGS em 1969, foi extinta após o 25 de Abril?",
+  "answer": "PIDE",
+  "difficulty": "1",
+  "notes": "Polícia Internacional e de Defesa do Estado."
+ },
+ {
+  "type": "choice",
+  "question": "Que dirigente chinês lançou, a partir de 1978, as reformas que abriram a economia da China ao mercado?",
+  "options": [
+   "Mao Tsé-Tung",
+   "Zhou Enlai",
+   "Deng Xiaoping",
+   "Jiang Zemin"
+  ],
+  "correct": 2,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Em que ano se dissolveu a União Soviética?",
+  "answer": "1991",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Em que ano aderiu Portugal à Comunidade Económica Europeia?",
+  "answer": "1986",
+  "difficulty": "1",
+  "notes": "A 1 de janeiro de 1986. O tratado de adesão foi assinado nos Jerónimos em junho de 1985."
+ }
+]

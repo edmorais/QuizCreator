@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz Creator</title>
+  <script>
+    // Aplicar o tema de cores antes de desenhar a página (evita o "flash").
+    try {
+      const c = (JSON.parse(localStorage.getItem('quizcreator.prefs')) || {}).color;
+      if (c === 'light' || c === 'dark') document.documentElement.dataset.theme = c;
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" aria-label="Quiz Creator">
+      <span class="logo" aria-hidden="true">Q</span>
+      <span class="brand-name">Quiz Creator</span>
+    </div>
+    <div class="meta">
+      <input id="meta-title" placeholder="Título do quiz" aria-label="Título do quiz">
+      <input id="meta-date" type="date" aria-label="Data">
+      <input id="meta-venue" placeholder="Local" aria-label="Local">
+    </div>
+    <div class="actions">
+      <details class="menu">
+        <summary class="btn">Ficheiro ▾</summary>
+        <div class="menu-pop">
+          <button id="btn-new">Novo quiz</button>
+          <button id="btn-import">Importar JSON…</button>
+          <button id="btn-export-json">Exportar JSON</button>
+        </div>
+      </details>
+      <button id="btn-bank" title="Banco de perguntas">Banco</button>
+      <button id="btn-theme" class="icon" type="button"></button>
+      <button id="btn-export" class="primary" title="PowerPoint, guião e Markdown">Exportar apresentação</button>
+      <input id="file-input" type="file" accept=".json,application/json" hidden>
+    </div>
+  </header>
+
+  <main>
+    <section class="status-card">
+      <div class="status-top">
+        <div class="progress-wrap">
+          <span id="progress-pct" class="pct"></span>
+          <div class="progress-col">
+            <span id="progress-text"></span>
+            <div class="progress"><div id="progress-bar"></div></div>
+          </div>
+        </div>
+        <span id="save-state" class="save-state"></span>
+      </div>
+      <ul id="warnings"></ul>
+    </section>
+
+    <section class="specials">
+      <div class="special-card" id="card-approx" tabindex="0"></div>
+      <div class="special-card" id="card-madeira" tabindex="0"></div>
+      <div class="special-card" id="card-guilhotina" tabindex="0"></div>
+    </section>
+
+    <div class="toolbar">
+      <div class="segmented" role="group" aria-label="Vista">
+        <button id="view-themes" type="button" aria-pressed="true">Por tema</button>
+        <button id="view-order" type="button" aria-pressed="false">Ordem do quiz</button>
+      </div>
+      <span id="view-hint" class="hint"></span>
+      <div class="toolbar-actions">
+        <select id="quiz-size" aria-label="Número de perguntas do quiz" title="Perguntas temáticas (mais a aproximação, a Madeira e a guilhotina)"></select>
+        <button id="btn-fill" type="button" title="Preencher com perguntas aleatórias do banco">🎲 Preencher</button>
+        <button id="btn-shuffle" type="button" title="Ordem aleatória sem repetir o tema em 5 perguntas seguidas">🔀 Baralhar ordem</button>
+        <button id="btn-undo" type="button" class="icon" disabled>↶</button>
+      </div>
+    </div>
+
+    <section id="grid-wrap" class="grid-wrap">
+      <div id="grid" class="grid"></div>
+    </section>
+
+    <section id="order-view" class="order-view" hidden>
+      <div class="ov-bar">
+        <label class="inline-label">Ordem
+          <select id="ov-mode">
+            <option value="themes">Agrupada por tema (8 rondas)</option>
+            <option value="mixed">Misturada</option>
+          </select>
+        </label>
+        <label id="ov-size-wrap" class="inline-label">Perguntas por ronda
+          <select id="ov-size">
+            <option value="6">6</option>
+            <option value="8">8</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+            <option value="24">24</option>
+            <option value="48">48</option>
+            <option value="96">96</option>
+          </select>
+        </label>
+        <span id="ov-status" class="ov-status"></span>
+      </div>
+      <div id="ov-rounds"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <!-- Editor de perguntas -->
+  <dialog id="editor" class="editor">
+    <form method="dialog" id="editor-form">
+      <header class="ed-head">
+        <span id="ed-label" class="ed-label"></span>
+        <div class="ed-nav">
+          <button type="button" id="ed-prev" class="icon" title="Anterior (Alt+←)">◀</button>
+          <button type="button" id="ed-next" class="icon" title="Seguinte (Alt+→)">▶</button>
+          <button type="button" id="ed-close" class="icon" title="Fechar (Esc)">✕</button>
+        </div>
+      </header>
+
+      <div class="ed-body">
+        <div class="ed-tools">
+          <button type="button" id="ed-random" title="Mostrar uma pergunta por usar do banco deste tema">🎲 Pergunta aleatória</button>
+          <select id="ed-random-diff" aria-label="Dificuldade da pergunta aleatória">
+            <option value="">qualquer dificuldade</option>
+            <option value="1">fácil</option>
+            <option value="2">média</option>
+            <option value="3">difícil</option>
+          </select>
+          <span id="ed-random-count" class="muted"></span>
+          <button type="button" id="ed-undo" hidden>↶ Desfazer substituição</button>
+        </div>
+        <div id="ed-random-preview" class="random-preview" hidden></div>
+
+        <div class="ed-cols">
+          <div class="ed-main">
+            <label id="ed-question-label">Pergunta
+              <textarea id="ed-question" rows="3"></textarea>
+            </label>
+            <div id="ed-dup" class="dup" hidden></div>
+
+            <div id="sec-guilhotina">
+              <span class="field-label">Quatro palavras <small>a resposta é a palavra que as liga</small></span>
+              <div class="words-grid">
+                <input class="ed-word" aria-label="Palavra 1" placeholder="1.ª palavra">
+                <input class="ed-word" aria-label="Palavra 2" placeholder="2.ª palavra">
+                <input class="ed-word" aria-label="Palavra 3" placeholder="3.ª palavra">
+                <input class="ed-word" aria-label="Palavra 4" placeholder="4.ª palavra">
+              </div>
+            </div>
+
+            <div id="sec-open" class="row">
+              <label class="grow">Resposta
+                <input id="ed-answer">
+              </label>
+              <label id="ed-unit-wrap" class="unit">Unidade
+                <input id="ed-unit" placeholder="ex. metros">
+              </label>
+            </div>
+
+            <div id="sec-choice" class="row">
+              <label class="grow">Opções <small>uma por linha</small>
+                <textarea id="ed-options" rows="4"></textarea>
+              </label>
+              <label class="unit">Opção correta
+                <select id="ed-correct"></select>
+              </label>
+            </div>
+
+            <div id="sec-match">
+              <div class="row">
+                <label class="grow">Coluna A <small>uma por linha (ficam A, B, C…)</small>
+                  <textarea id="ed-match-left" rows="4"></textarea>
+                </label>
+                <label class="grow">Par certo de cada linha <small>a ordem no ecrã é baralhada</small>
+                  <textarea id="ed-match-right" rows="4"></textarea>
+                </label>
+              </div>
+              <div class="match-box">
+                <div id="ed-match-preview" class="match-preview"></div>
+                <button type="button" id="ed-match-shuffle">🔀 Baralhar números</button>
+              </div>
+            </div>
+
+            <label>Notas / curiosidade <small>vão para as notas do apresentador</small>
+              <textarea id="ed-notes" rows="3"></textarea>
+            </label>
+          </div>
+
+          <aside class="ed-side">
+            <div class="side-grid" id="ed-kind-row">
+              <label class="span-2" id="ed-type-wrap">Tipo
+                <select id="ed-type">
+                  <option value="open">Resposta aberta</option>
+                  <option value="choice">Escolha múltipla</option>
+                  <option value="match">Correspondência (A-1, B-2…)</option>
+                </select>
+              </label>
+              <label>Pontos
+                <select id="ed-points">
+                  <option value="1">1 ponto</option>
+                  <option value="2">2 pontos</option>
+                </select>
+              </label>
+              <label>Dificuldade
+                <select id="ed-difficulty">
+                  <option value="">—</option>
+                  <option value="1">Fácil</option>
+                  <option value="2">Média</option>
+                  <option value="3">Difícil</option>
+                </select>
+              </label>
+            </div>
+
+            <fieldset class="media">
+              <legend>Multimédia <small>opcional</small></legend>
+              <div class="media-row">
+                <button type="button" id="ed-media-file-btn">Escolher ficheiro…</button>
+                <input id="ed-media-file" type="file" accept="image/*,audio/*,video/*" hidden>
+                <label id="ed-media-kind-wrap" class="inline">
+                  <select id="ed-media-kind" aria-label="Tipo de multimédia">
+                    <option value="image">Imagem</option>
+                    <option value="audio">Áudio</option>
+                    <option value="video">Vídeo</option>
+                  </select>
+                </label>
+                <button type="button" id="ed-media-remove" class="danger">Remover</button>
+              </div>
+              <input id="ed-media-url" placeholder="…ou URL (YouTube, imagem, mp3…)" aria-label="URL da multimédia">
+              <div id="ed-media-preview" class="media-preview"></div>
+            </fieldset>
+
+            <label>Fonte
+              <input id="ed-source" placeholder="URL ou referência">
+            </label>
+
+            <div class="checks">
+              <label class="check"><input type="checkbox" id="ed-verified"> Resposta verificada</label>
+              <label class="check" id="ed-porto-wrap"><input type="checkbox" id="ed-porto"> Sobre o Porto</label>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <footer class="ed-foot">
+        <div id="ed-move">
+          <button type="button" id="ed-up" class="icon" title="Mover para cima no tema">↑</button>
+          <button type="button" id="ed-down" class="icon" title="Mover para baixo no tema">↓</button>
+        </div>
+        <div class="ed-foot-right">
+          <button type="button" id="ed-bank-search">Procurar no banco</button>
+          <button type="button" id="ed-bank-save" title="Guardar como pergunta de reserva">Guardar no banco</button>
+          <button type="button" id="ed-clear" class="danger">Limpar</button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Preencher com perguntas aleatórias -->
+  <dialog id="fill-dialog" class="small">
+    <form method="dialog">
+      <h3>Preencher com perguntas aleatórias</h3>
+      <div class="radio-cards">
+        <label class="radio-card"><input type="radio" name="fill-mode" value="empty" checked>
+          <span><strong>Só as vazias</strong><small>Mantém as perguntas que já escolheste.</small></span>
+        </label>
+        <label class="radio-card"><input type="radio" name="fill-mode" value="all">
+          <span><strong>Substituir todas</strong><small>Sorteia um quiz novo (podes desfazer).</small></span>
+        </label>
+      </div>
+      <label class="check"><input type="checkbox" id="fill-specials" checked> Incluir a aproximação, a Madeira e a guilhotina</label>
+      <ul class="fill-rules">
+        <li id="fill-rule-mix"></li>
+        <li id="fill-rule-match"></li>
+        <li>Só perguntas por usar e sem repetições</li>
+      </ul>
+      <p id="fill-summary" class="muted"></p>
+      <footer class="ed-foot">
+        <button value="cancel">Cancelar</button>
+        <button id="fill-go" value="ok" class="primary">Preencher</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Banco de perguntas -->
+  <dialog id="bank" class="drawer">
+    <div class="drawer-inner">
+      <header class="ed-head">
+        <span class="ed-label">Banco de perguntas <small id="bank-count"></small></span>
+        <button type="button" id="bank-close" class="icon" title="Fechar (Esc)">✕</button>
+      </header>
+      <div id="bank-target" class="bank-target" hidden></div>
+      <div class="row">
+        <input id="bank-search" class="grow" placeholder="Pesquisar pergunta, resposta ou notas…">
+        <select id="bank-theme" aria-label="Tema"></select>
+        <select id="bank-status" aria-label="Estado">
+          <option value="">Todas</option>
+          <option value="unused">Por usar</option>
+          <option value="used">Já usadas</option>
+        </select>
+      </div>
+      <div class="bank-actions">
+        <button type="button" id="bank-archive" class="primary" title="Depois da quiz night: marca as perguntas como usadas">Arquivar quiz atual</button>
+        <button type="button" id="bank-import-quizzes" title="Regista quizzes antigos (.json) como já usados">Importar quizzes antigos</button>
+        <button type="button" id="bank-export">Exportar banco</button>
+        <button type="button" id="bank-import">Importar banco</button>
+        <input id="bank-quiz-files" type="file" accept=".json,application/json" multiple hidden>
+        <input id="bank-file" type="file" accept=".json,application/json" hidden>
+      </div>
+      <ul id="bank-list" class="bank-list"></ul>
+    </div>
+  </dialog>
+
+  <!-- Exportação -->
+  <dialog id="export-dialog" class="wide">
+    <form method="dialog">
+      <h3>Exportar apresentação</h3>
+      <div>
+        <span class="field-label">Template do PowerPoint</span>
+        <div id="ex-templates" class="tpl-grid"></div>
+        <p id="ex-template-info" class="hint"></p>
+      </div>
+      <div class="row">
+        <label class="grow">Ordem das perguntas
+          <select id="ex-mode">
+            <option value="themes">Por tema (8 rondas)</option>
+            <option value="mixed">Misturada</option>
+          </select>
+        </label>
+        <label id="ex-size-wrap">Perguntas por ronda
+          <select id="ex-size">
+            <option value="6">6</option>
+            <option value="8">8</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+            <option value="24">24</option>
+            <option value="48">48</option>
+            <option value="96">96</option>
+          </select>
+        </label>
+      </div>
+      <div id="ex-order" class="order-preview"></div>
+      <div><button type="button" id="ex-shuffle">🔀 Baralhar de novo</button></div>
+      <label>Respostas
+        <select id="ex-answers">
+          <option value="round">Depois de cada ronda</option>
+          <option value="end">Todas no fim</option>
+          <option value="none">Não incluir</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="ex-notes"> Respostas, notas e fontes nas notas do apresentador</label>
+      <p class="hint">A ordem fica gravada no quiz, para o PowerPoint e o guião terem a mesma numeração. A aproximação é lida no início e a resposta só aparece no fim.</p>
+      <footer class="ed-foot">
+        <button value="cancel">Cancelar</button>
+        <div class="ed-foot-right">
+          <button value="script" title="Lista de perguntas e respostas para o apresentador">Guião (.md)</button>
+          <button value="marp" title="Markdown para Marp">Slides Marp (.md)</button>
+          <button value="answers" title="Para corrigir: cada pergunta em dois slides, a pergunta e depois só a resposta, em destaque">Só respostas (.pptx)</button>
+          <button value="pptx" class="primary">PowerPoint (.pptx)</button>
+        </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <script src="banco/base.js"></script>
+  <script src="js/model.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/bank.js"></script>
+  <script src="js/arrange.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

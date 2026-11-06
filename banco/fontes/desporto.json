@@ -1,0 +1,208 @@
+[
+ {
+  "type": "open",
+  "question": "Quantos Campeonatos do Mundo venceu Pelé como jogador?",
+  "answer": "3",
+  "difficulty": "2",
+  "notes": "1958, 1962 e 1970."
+ },
+ {
+  "type": "open",
+  "question": "Em 1963, que guarda-redes soviético, conhecido como \"Aranha Negra\", ganhou a Bola de Ouro?",
+  "answer": "Lev Yashin",
+  "difficulty": "3"
+ },
+ {
+  "type": "choice",
+  "question": "Que revista francesa criou a Bola de Ouro, em 1956?",
+  "options": [
+   "L'Équipe",
+   "France Football",
+   "Paris Match",
+   "Onze Mondial"
+  ],
+  "correct": 1,
+  "difficulty": "3",
+  "notes": "O primeiro vencedor foi o inglês Stanley Matthews."
+ },
+ {
+  "type": "choice",
+  "question": "Como se chama o dérbi de Glasgow entre o Celtic e o Rangers?",
+  "options": [
+   "Old Firm",
+   "El Clásico",
+   "Superclásico",
+   "Derby della Madonnina"
+  ],
+  "correct": 0,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Em que ano Maradona marcou o famoso golo da \"Mão de Deus\", frente à Inglaterra?",
+  "answer": "1986",
+  "difficulty": "1",
+  "notes": "Nos quartos de final do Mundial do México; no mesmo jogo marcou o \"golo do século\"."
+ },
+ {
+  "type": "open",
+  "question": "Quantas vezes Rafael Nadal venceu Roland Garros?",
+  "answer": "14",
+  "difficulty": "2",
+  "notes": "Retirou-se em 2024. Ganhou o primeiro em 2005, com 19 anos."
+ },
+ {
+  "type": "open",
+  "question": "Em que prova Fernanda Ribeiro se sagrou campeã olímpica em Atlanta 1996?",
+  "answer": "10 000 metros",
+  "difficulty": "2"
+ },
+ {
+  "type": "choice",
+  "question": "Que ciclista espanhol venceu cinco Voltas a França seguidas, entre 1991 e 1995?",
+  "options": [
+   "Miguel Induráin",
+   "Pedro Delgado",
+   "Alberto Contador",
+   "Carlos Sastre"
+  ],
+  "correct": 0,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Numa prova individual de estilos, em natação, qual é o primeiro estilo a ser nadado?",
+  "answer": "Mariposa",
+  "difficulty": "3",
+  "notes": "A ordem é mariposa, costas, bruços e livre."
+ },
+ {
+  "type": "open",
+  "question": "Que técnica de salto em altura, de costas para a fasquia, se tornou famosa nos Jogos do México 1968?",
+  "answer": "Fosbury flop",
+  "difficulty": "2",
+  "notes": "Nome do norte-americano Dick Fosbury, que venceu a prova."
+ },
+ {
+  "type": "choice",
+  "question": "Quantos títulos mundiais de Fórmula 1 conquistou o argentino Juan Manuel Fangio?",
+  "options": [
+   "3",
+   "4",
+   "5",
+   "7"
+  ],
+  "correct": 2,
+  "difficulty": "3",
+  "notes": "Nos anos 50, por quatro equipas diferentes."
+ },
+ {
+  "type": "open",
+  "question": "Como se chama a dança maori que a seleção de râguebi da Nova Zelândia executa antes dos jogos?",
+  "answer": "Haka",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que desporto de inverno combina esqui de fundo e tiro de carabina?",
+  "answer": "Biatlo",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que piloto português venceu dois Grandes Prémios de MotoGP em 2020, ao serviço da KTM?",
+  "answer": "Miguel Oliveira",
+  "difficulty": "1",
+  "notes": "Na Estíria e em Portugal, em Portimão."
+ },
+ {
+  "type": "choice",
+  "question": "Em que ano se disputou o primeiro Campeonato do Mundo de Fórmula 1?",
+  "options": [
+   "1950",
+   "1946",
+   "1955",
+   "1960"
+  ],
+  "correct": 0,
+  "difficulty": "2",
+  "notes": "A primeira corrida foi em Silverstone e o primeiro campeão foi Giuseppe Farina."
+ },
+ {
+  "type": "match",
+  "question": "Faz corresponder cada peça de xadrez ao seu valor habitual em peões.",
+  "pairs": [
+   {
+    "left": "Peão",
+    "right": "1"
+   },
+   {
+    "left": "Cavalo",
+    "right": "3"
+   },
+   {
+    "left": "Torre",
+    "right": "5"
+   },
+   {
+    "left": "Dama",
+    "right": "9"
+   }
+  ],
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Na sueca, quantos pontos vale um ás?",
+  "answer": "11",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "No Euromilhões, quantos números e quantas estrelas escolhe cada apostador?",
+  "answer": "5 números e 2 estrelas",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Quantos peões tem cada jogador no início de uma partida de xadrez?",
+  "answer": "8",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Como se chama o xeque-mate mais rápido possível, dado pelas pretas logo na segunda jogada?",
+  "answer": "Mate do louco",
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Que designer japonês criou Mario e a série The Legend of Zelda?",
+  "answer": "Shigeru Miyamoto",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que jogo de batalha real da Epic Games, lançado em 2017, popularizou as danças das personagens?",
+  "answer": "Fortnite",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Como se chama o irmão de Mario, mais alto e vestido de verde?",
+  "answer": "Luigi",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que jogo de dedução de 2018 se tornou viral em 2020, com tripulantes a tentar descobrir quem é o \"impostor\" a bordo de uma nave?",
+  "answer": "Among Us",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que ouriço azul supersónico é a mascote da SEGA?",
+  "answer": "Sonic",
+  "difficulty": "1"
+ }
+]

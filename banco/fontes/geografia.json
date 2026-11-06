@@ -1,0 +1,214 @@
+[
+ {
+  "type": "open",
+  "question": "Em que localidade fica o mosteiro mandado construir por D. João I para agradecer a vitória em Aljubarrota?",
+  "answer": "Batalha",
+  "difficulty": "1",
+  "notes": "O nome oficial é Mosteiro de Santa Maria da Vitória."
+ },
+ {
+  "type": "choice",
+  "question": "Qual é o rio mais longo da Europa?",
+  "options": [
+   "Danúbio",
+   "Reno",
+   "Volga",
+   "Dniepre"
+  ],
+  "correct": 2,
+  "difficulty": "2",
+  "notes": "O Volga corre todo em território russo e desagua no Mar Cáspio."
+ },
+ {
+  "type": "open",
+  "question": "Em que ano ocorreu a revolta republicana do Porto que dá nome à Rua de 31 de Janeiro?",
+  "answer": "1891",
+  "difficulty": "2",
+  "porto": true,
+  "notes": "Foi a primeira tentativa de implantar a República em Portugal; fracassou."
+ },
+ {
+  "type": "open",
+  "question": "Quantas estrelas tem a bandeira de Cabo Verde?",
+  "answer": "10",
+  "difficulty": "2",
+  "notes": "Uma por cada ilha do arquipélago."
+ },
+ {
+  "type": "open",
+  "question": "Que canal, inaugurado em 1869, liga o Mediterrâneo ao Mar Vermelho?",
+  "answer": "Canal do Suez",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Qual é a segunda montanha mais alta do mundo?",
+  "answer": "K2",
+  "difficulty": "2",
+  "notes": "Tem cerca de 8611 metros e fica na fronteira entre o Paquistão e a China."
+ },
+ {
+  "type": "open",
+  "question": "Que monumento de Tomar foi sede da Ordem dos Templários e depois da Ordem de Cristo?",
+  "answer": "Convento de Cristo",
+  "difficulty": "1",
+  "notes": "É Património Mundial desde 1983."
+ },
+ {
+  "type": "open",
+  "question": "Em que igreja do Porto casaram, em 1387, D. João I e D. Filipa de Lencastre?",
+  "answer": "Sé do Porto",
+  "difficulty": "2",
+  "porto": true,
+  "notes": "Deste casamento nasceu a chamada 'Ínclita Geração', que inclui o Infante D. Henrique."
+ },
+ {
+  "type": "choice",
+  "question": "Em que ano foi Porto Capital Europeia da Cultura?",
+  "options": [
+   "1994",
+   "2001",
+   "2004",
+   "2012"
+  ],
+  "correct": 1,
+  "difficulty": "2",
+  "porto": true,
+  "notes": "Partilhou o título com Roterdão. Lisboa foi em 1994 e Guimarães em 2012."
+ },
+ {
+  "type": "open",
+  "question": "Que cidade argentina da Terra do Fogo se apresenta como 'o fim do mundo'?",
+  "answer": "Ushuaia",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Qual é a capital do Chile?",
+  "answer": "Santiago",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que mar se liga ao Mediterrâneo através do Bósforo, do Mar de Mármara e dos Dardanelos?",
+  "answer": "Mar Negro",
+  "difficulty": "2"
+ },
+ {
+  "type": "choice",
+  "question": "Qual destes países NÃO tem costa marítima?",
+  "options": [
+   "Eslováquia",
+   "Croácia",
+   "Eslovénia",
+   "Bulgária"
+  ],
+  "correct": 0,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que arquiteto inglês projetou o Hospital de Santo António, no Porto?",
+  "answer": "John Carr",
+  "difficulty": "3",
+  "porto": true,
+  "notes": "O projeto, de estilo neopalladiano, é do final do século XVIII e nunca foi concluído na totalidade."
+ },
+ {
+  "type": "open",
+  "question": "Que arquipélago fica ao largo de Peniche?",
+  "answer": "Berlengas",
+  "difficulty": "1"
+ },
+ {
+  "type": "match",
+  "question": "Faz corresponder cada comunidade autónoma espanhola à sua capital.",
+  "pairs": [
+   {
+    "left": "País Basco",
+    "right": "Vitória-Gasteiz"
+   },
+   {
+    "left": "Extremadura",
+    "right": "Mérida"
+   },
+   {
+    "left": "Galiza",
+    "right": "Santiago de Compostela"
+   },
+   {
+    "left": "Andaluzia",
+    "right": "Sevilha"
+   }
+  ],
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Em que ano foi demarcada pelo Marquês de Pombal a região do vinho do Porto, no Douro?",
+  "answer": "1756",
+  "difficulty": "3",
+  "notes": "É uma das regiões vinícolas demarcadas e regulamentadas mais antigas do mundo."
+ },
+ {
+  "type": "open",
+  "question": "Como se chama quem nasce em Salvador da Bahia?",
+  "answer": "Soteropolitano",
+  "difficulty": "3",
+  "notes": "Vem do grego 'Soterópolis', a cidade do Salvador."
+ },
+ {
+  "type": "choice",
+  "question": "Ao longo de que rio ficam os Passadiços de Arouca?",
+  "options": [
+   "Paiva",
+   "Vouga",
+   "Caima",
+   "Douro"
+  ],
+  "correct": 0,
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Como se chama uma ilha de coral em forma de anel, com uma lagoa ao centro?",
+  "answer": "Atol",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Quais são as três cores da bandeira da Irlanda?",
+  "answer": "Verde, branco e laranja",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Qual é a capital da Ucrânia?",
+  "answer": "Kiev (Kyiv)",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que ilha das Caraíbas, com capital em San Juan, é um território associado aos EUA?",
+  "answer": "Porto Rico",
+  "difficulty": "1"
+ },
+ {
+  "type": "choice",
+  "question": "Como se chama a língua basca na própria língua?",
+  "options": [
+   "Euskara",
+   "Aranês",
+   "Bable",
+   "Occitano"
+  ],
+  "correct": 0,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Qual é a capital da Geórgia, no Cáucaso?",
+  "answer": "Tbilisi",
+  "difficulty": "3"
+ }
+]

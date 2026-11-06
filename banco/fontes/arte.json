@@ -1,0 +1,221 @@
+[
+ {
+  "type": "open",
+  "question": "Que cor se obtém misturando tinta azul com tinta amarela?",
+  "answer": "Verde",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que museu de Lisboa nasceu da coleção de um magnata do petróleo de origem arménia?",
+  "answer": "Museu Calouste Gulbenkian",
+  "difficulty": "1",
+  "notes": "Calouste Gulbenkian viveu em Lisboa desde 1942 até morrer, em 1955."
+ },
+ {
+  "type": "open",
+  "question": "Que movimento artístico foi criado por Pablo Picasso e Georges Braque no início do século XX?",
+  "answer": "Cubismo",
+  "difficulty": "1",
+  "notes": "\"As Meninas de Avignon\" (1907), de Picasso, é considerada a obra precursora."
+ },
+ {
+  "type": "open",
+  "question": "Em que ano Eduardo Souto de Moura venceu o Prémio Pritzker?",
+  "answer": "2011",
+  "difficulty": "3",
+  "notes": "Tornou-se o segundo português a ganhar o prémio, depois de Álvaro Siza (1992)."
+ },
+ {
+  "type": "open",
+  "question": "Que dupla francesa criou a banda desenhada \"Astérix\"?",
+  "answer": "René Goscinny e Albert Uderzo",
+  "difficulty": "2",
+  "notes": "Astérix estreou-se em 1959, na revista Pilote."
+ },
+ {
+  "type": "open",
+  "question": "Como se chamam as cores como o vermelho, o laranja e o amarelo, associadas ao calor?",
+  "answer": "Cores quentes",
+  "difficulty": "1",
+  "notes": "Azuis, verdes e violetas são as chamadas cores frias."
+ },
+ {
+  "type": "open",
+  "question": "Que pintor francês retratou a vida noturna de Montmartre e desenhou cartazes para o Moulin Rouge?",
+  "answer": "Henri de Toulouse-Lautrec",
+  "difficulty": "2",
+  "notes": "Uma doença óssea impediu-o de crescer: tinha cerca de 1,52 m."
+ },
+ {
+  "type": "open",
+  "question": "Que fotógrafo americano é famoso pelas paisagens a preto e branco do Parque Nacional de Yosemite?",
+  "answer": "Ansel Adams",
+  "difficulty": "2",
+  "notes": "Criou, com Fred Archer, o \"sistema de zonas\" para controlar a exposição."
+ },
+ {
+  "type": "match",
+  "question": "Faz corresponder cada museu à cidade onde se encontra.",
+  "pairs": [
+   {
+    "left": "Museu d'Orsay",
+    "right": "Paris"
+   },
+   {
+    "left": "Museu Thyssen-Bornemisza",
+    "right": "Madrid"
+   },
+   {
+    "left": "Kunsthistorisches Museum",
+    "right": "Viena"
+   },
+   {
+    "left": "Museu Van Gogh",
+    "right": "Amesterdão"
+   }
+  ],
+  "difficulty": "2"
+ },
+ {
+  "type": "choice",
+  "question": "Que designer britânico liderou durante anos o design da Apple, incluindo o iMac e o iPhone?",
+  "options": [
+   "Terence Conran",
+   "James Dyson",
+   "Marc Newson",
+   "Jony Ive"
+  ],
+  "correct": 3,
+  "difficulty": "2",
+  "notes": "Saiu da Apple em 2019 para fundar o seu próprio estúdio, LoveFrom."
+ },
+ {
+  "type": "open",
+  "question": "Que arquiteto renascentista construiu a cúpula da catedral de Florença?",
+  "answer": "Filippo Brunelleschi",
+  "difficulty": "2",
+  "notes": "Construída sem cimbres (estruturas de apoio), entre 1420 e 1436."
+ },
+ {
+  "type": "choice",
+  "question": "Em que publicação se estreou Tintim, em 1929?",
+  "options": [
+   "Spirou",
+   "Le Petit Vingtième",
+   "Pilote",
+   "Le Journal de Mickey"
+  ],
+  "correct": 1,
+  "difficulty": "3",
+  "notes": "Era o suplemento infantil do jornal belga \"Le Vingtième Siècle\"."
+ },
+ {
+  "type": "open",
+  "question": "Que pintor alemão pintou \"Os Embaixadores\" (1533), quadro com uma caveira deformada que só se vê de lado?",
+  "answer": "Hans Holbein, o Jovem",
+  "difficulty": "3",
+  "notes": "Este efeito de perspetiva chama-se anamorfose. O quadro está na National Gallery, em Londres."
+ },
+ {
+  "type": "open",
+  "question": "Que artista nova-iorquino, amigo de Andy Warhol, começou por pintar graffiti com a assinatura SAMO?",
+  "answer": "Jean-Michel Basquiat",
+  "difficulty": "2",
+  "notes": "Morreu em 1988, com 27 anos."
+ },
+ {
+  "type": "open",
+  "question": "Como se chama o retrato que um artista faz de si próprio?",
+  "answer": "Autorretrato",
+  "difficulty": "1",
+  "notes": "Rembrandt e Van Gogh pintaram dezenas deles."
+ },
+ {
+  "type": "open",
+  "question": "Que artista franco-americana criou \"Maman\", uma aranha gigante de bronze e aço com mais de 9 metros?",
+  "answer": "Louise Bourgeois",
+  "difficulty": "3",
+  "notes": "Há exemplares em vários museus, incluindo à porta do Guggenheim de Bilbau. A aranha homenageia a mãe da artista."
+ },
+ {
+  "type": "open",
+  "question": "Em que planeta nasceu o Super-Homem?",
+  "answer": "Krypton",
+  "difficulty": "1",
+  "notes": "Foi criado por Jerry Siegel e Joe Shuster e estreou-se em 1938."
+ },
+ {
+  "type": "choice",
+  "question": "Em que cidade fica o Museu Nacional de Arte Antiga?",
+  "options": [
+   "Porto",
+   "Lisboa",
+   "Coimbra",
+   "Braga"
+  ],
+  "correct": 1,
+  "difficulty": "1",
+  "notes": "Fica no Palácio Alvor, na Rua das Janelas Verdes, e por isso é conhecido como \"Museu das Janelas Verdes\"."
+ },
+ {
+  "type": "open",
+  "question": "Como se chama a fotografia que uma pessoa tira a si própria, geralmente com o telemóvel?",
+  "answer": "Selfie",
+  "difficulty": "1",
+  "notes": "Foi escolhida \"palavra do ano\" pelos dicionários Oxford em 2013."
+ },
+ {
+  "type": "choice",
+  "question": "No círculo cromático tradicional, qual é a cor complementar do amarelo?",
+  "options": [
+   "Verde",
+   "Violeta",
+   "Laranja",
+   "Azul-claro"
+  ],
+  "correct": 1,
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que livraria do Porto, com uma famosa escadaria vermelha, é visitada por milhares de turistas?",
+  "answer": "Livraria Lello",
+  "difficulty": "1",
+  "notes": "O edifício neogótico é de 1906."
+ },
+ {
+  "type": "open",
+  "question": "Como é popularmente conhecida a Casa Milà, de Gaudí, em Barcelona?",
+  "answer": "La Pedrera",
+  "difficulty": "2",
+  "notes": "Significa \"a pedreira\", por causa da fachada ondulada de pedra."
+ },
+ {
+  "type": "open",
+  "question": "Que fotógrafo americano captou o hastear da bandeira dos EUA em Iwo Jima, em 1945?",
+  "answer": "Joe Rosenthal",
+  "difficulty": "3",
+  "notes": "A fotografia valeu-lhe o Prémio Pulitzer e inspirou um memorial perto de Washington."
+ },
+ {
+  "type": "choice",
+  "question": "Como se chama a arte japonesa de reparar cerâmica partida com laca misturada com pó de ouro?",
+  "options": [
+   "Origami",
+   "Kintsugi",
+   "Bonsai",
+   "Ikebana"
+  ],
+  "correct": 1,
+  "difficulty": "2",
+  "notes": "Em vez de esconder as fissuras, valoriza-as como parte da história do objeto."
+ },
+ {
+  "type": "open",
+  "question": "Que solvente, obtido da resina de pinheiro, é tradicionalmente usado para diluir a tinta a óleo e limpar os pincéis?",
+  "answer": "Aguarrás",
+  "difficulty": "2",
+  "notes": "Também chamada essência de terebintina."
+ }
+]

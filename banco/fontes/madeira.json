@@ -1,0 +1,43 @@
+[
+ {
+  "type": "open",
+  "question": "Quais são as cores do Club Sport Marítimo?",
+  "answer": "Verde e vermelho",
+  "difficulty": "1",
+  "notes": "O clube foi fundado em 1910 e joga no Estádio dos Barreiros."
+ },
+ {
+  "type": "open",
+  "question": "Que flor exótica, também chamada ave-do-paraíso, é um dos símbolos da Madeira?",
+  "answer": "Estrelícia (Strelitzia)",
+  "difficulty": "1",
+  "notes": "É originária da África do Sul, mas tornou-se imagem de marca da ilha."
+ },
+ {
+  "type": "open",
+  "question": "Como se chamam os homens que conduzem os carros de cesto na descida do Monte?",
+  "answer": "Carreiros",
+  "difficulty": "2",
+  "notes": "Vestem de branco, usam chapéu de palha e travam os carros com as botas de sola de borracha."
+ },
+ {
+  "type": "choice",
+  "question": "Que imperatriz passou o inverno de 1860-1861 no Funchal para tratar a saúde?",
+  "options": [
+   "Rainha Vitória",
+   "Maria Antonieta",
+   "Sissi (Isabel da Áustria)",
+   "Catarina, a Grande"
+  ],
+  "correct": 2,
+  "difficulty": "2",
+  "notes": "Elisabeth da Áustria, a famosa Sissi, ficou instalada na Quinta Vigia."
+ },
+ {
+  "type": "open",
+  "question": "Como se chama o processo de aquecimento usado no envelhecimento do vinho Madeira?",
+  "answer": "Estufagem",
+  "difficulty": "3",
+  "notes": "Imita o efeito das viagens pelos trópicos: o \"vinho da roda\" ia e voltava de barco e regressava melhor."
+ }
+]

@@ -1,0 +1,215 @@
+[
+ {
+  "type": "open",
+  "question": "Quantos Óscares ganhou «O Senhor dos Anéis: O Regresso do Rei» na cerimónia de 2004?",
+  "answer": "11",
+  "difficulty": "2",
+  "notes": "Venceu em todas as 11 categorias para que estava nomeado."
+ },
+ {
+  "type": "open",
+  "question": "Que ator interpretou Forrest Gump?",
+  "answer": "Tom Hanks",
+  "difficulty": "1",
+  "notes": "Ganhou o Óscar de Melhor Ator por esse papel, um ano depois de o ganhar por «Filadélfia»."
+ },
+ {
+  "type": "open",
+  "question": "Que banda irlandesa tem Bono como vocalista?",
+  "answer": "U2",
+  "difficulty": "1",
+  "notes": "Formou-se em Dublin em 1976."
+ },
+ {
+  "type": "open",
+  "question": "Por que filme ganhou Leonardo DiCaprio o Óscar de Melhor Ator, na cerimónia de 2016?",
+  "answer": "The Revenant – O Renascido",
+  "difficulty": "2",
+  "notes": "Foi o seu primeiro Óscar, à sexta nomeação como ator."
+ },
+ {
+  "type": "choice",
+  "question": "Que instrumento tocava o músico de jazz Charlie Parker?",
+  "options": [
+   "Trompete",
+   "Saxofone",
+   "Clarinete",
+   "Trombone"
+  ],
+  "correct": 1,
+  "difficulty": "2",
+  "notes": "Era conhecido pela alcunha «Bird» e foi um dos criadores do bebop."
+ },
+ {
+  "type": "open",
+  "question": "Que fadista gravou «Lisboa, Menina e Moça»?",
+  "answer": "Carlos do Carmo",
+  "difficulty": "2",
+  "notes": "Foi o primeiro português a receber um Grammy Latino, pela carreira, em 2014."
+ },
+ {
+  "type": "open",
+  "question": "Que série da RTP, adaptação da espanhola «Cuéntame cómo pasó», retrata uma família lisboeta a partir de 1968?",
+  "answer": "Conta-me Como Foi",
+  "difficulty": "2",
+  "notes": "Estreou em 2007."
+ },
+ {
+  "type": "open",
+  "question": "Que ator interpretou Hannibal Lecter em «O Silêncio dos Inocentes» (1991)?",
+  "answer": "Anthony Hopkins",
+  "difficulty": "1",
+  "notes": "Aparece pouco mais de 15 minutos no ecrã e ganhou o Óscar de Melhor Ator."
+ },
+ {
+  "type": "choice",
+  "question": "Qual destes instrumentos se toca habitualmente com um arco?",
+  "options": [
+   "Harpa",
+   "Banjo",
+   "Violoncelo",
+   "Bandolim"
+  ],
+  "correct": 2,
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que banda finlandesa venceu a Eurovisão de 2006 mascarada de monstros?",
+  "answer": "Lordi",
+  "difficulty": "3",
+  "notes": "A canção era «Hard Rock Hallelujah». Foi a primeira vitória da Finlândia."
+ },
+ {
+  "type": "open",
+  "question": "Que série de 1997 tinha Sarah Michelle Gellar como caçadora de vampiros?",
+  "answer": "Buffy, a Caçadora de Vampiros",
+  "difficulty": "1"
+ },
+ {
+  "type": "choice",
+  "question": "Em que ano foi emitido o último episódio de «Friends»?",
+  "options": [
+   "2001",
+   "2002",
+   "2003",
+   "2004"
+  ],
+  "correct": 3,
+  "difficulty": "2",
+  "notes": "A série teve 10 temporadas, de 1994 a 2004."
+ },
+ {
+  "type": "open",
+  "question": "Que estilo musical nasceu em Nova Orleães no início do século XX?",
+  "answer": "Jazz",
+  "difficulty": "1"
+ },
+ {
+  "type": "open",
+  "question": "Que realizador britânico assinou «Oppenheimer», vencedor do Óscar de Melhor Filme na cerimónia de 2024?",
+  "answer": "Christopher Nolan",
+  "difficulty": "1",
+  "notes": "Foi o primeiro Óscar de Nolan. Cillian Murphy venceu o de Melhor Ator."
+ },
+ {
+  "type": "choice",
+  "question": "Que série britânica acompanha a família Shelby, um gangue de Birmingham do pós-Primeira Guerra?",
+  "options": [
+   "Peaky Blinders",
+   "Boardwalk Empire",
+   "Taboo",
+   "Ripper Street"
+  ],
+  "correct": 0,
+  "difficulty": "2",
+  "notes": "Cillian Murphy interpreta Thomas Shelby."
+ },
+ {
+  "type": "open",
+  "question": "Que série da HBO de 2014 tinha Matthew McConaughey e Woody Harrelson como detetives no Louisiana?",
+  "answer": "True Detective",
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que banda britânica tem Chris Martin como vocalista?",
+  "answer": "Coldplay",
+  "difficulty": "1",
+  "notes": "Formaram-se em Londres em 1996, quando os membros estudavam na University College London."
+ },
+ {
+  "type": "open",
+  "question": "Quem criou a série «The Wire», passada em Baltimore?",
+  "answer": "David Simon",
+  "difficulty": "3",
+  "notes": "Era jornalista do Baltimore Sun antes de escrever para televisão."
+ },
+ {
+  "type": "open",
+  "question": "Que compositor italiano escreveu as óperas «Madame Butterfly» e «Tosca»?",
+  "answer": "Giacomo Puccini",
+  "difficulty": "2",
+  "notes": "«Turandot», a sua última ópera, ficou inacabada."
+ },
+ {
+  "type": "open",
+  "question": "Que realizador português assinou o thriller «O Lugar do Morto» (1984)?",
+  "answer": "António-Pedro Vasconcelos",
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Que pianista e cantor cego norte-americano gravou «Georgia on My Mind»?",
+  "answer": "Ray Charles",
+  "difficulty": "1",
+  "notes": "Jamie Foxx ganhou o Óscar ao interpretá-lo no filme «Ray» (2004)."
+ },
+ {
+  "type": "match",
+  "question": "Faz corresponder cada série ao canal ou plataforma onde estreou.",
+  "pairs": [
+   {
+    "left": "Stranger Things",
+    "right": "Netflix"
+   },
+   {
+    "left": "Os Sopranos",
+    "right": "HBO"
+   },
+   {
+    "left": "Breaking Bad",
+    "right": "AMC"
+   },
+   {
+    "left": "Sherlock",
+    "right": "BBC"
+   }
+  ],
+  "difficulty": "2"
+ },
+ {
+  "type": "open",
+  "question": "Que apresentador conduziu o «The Tonight Show» nos EUA de 1962 a 1992?",
+  "answer": "Johnny Carson",
+  "difficulty": "3"
+ },
+ {
+  "type": "open",
+  "question": "Como se chama a obra em que um instrumento solista dialoga com a orquestra?",
+  "answer": "Concerto",
+  "difficulty": "2"
+ },
+ {
+  "type": "choice",
+  "question": "Que filme de Serguei Eisenstein (1925) tem a famosa cena do carrinho de bebé na escadaria de Odessa?",
+  "options": [
+   "Outubro",
+   "O Couraçado Potemkine",
+   "Ivan, o Terrível",
+   "A Greve"
+  ],
+  "correct": 1,
+  "difficulty": "3"
+ }
+]

@@ -1,0 +1,32 @@
+[
+ {
+  "question": "Qual é o comprimento total da Ponte 25 de Abril, em Lisboa?",
+  "answer": "2277",
+  "unit": "metros",
+  "notes": "O vão central tem cerca de 1013 m."
+ },
+ {
+  "question": "Qual é a altitude do Monte Elbrus, no Cáucaso?",
+  "answer": "5642",
+  "unit": "metros",
+  "notes": "É frequentemente apontado como o ponto mais alto da Europa."
+ },
+ {
+  "question": "Qual é a altura das Cataratas Vitória, entre a Zâmbia e o Zimbabué?",
+  "answer": "108",
+  "unit": "metros",
+  "notes": "Com cerca de 1700 m de largura, formam a maior cortina de água do mundo."
+ },
+ {
+  "question": "Qual é o ponto de fusão do ferro puro?",
+  "answer": "1538",
+  "unit": "°C",
+  "notes": ""
+ },
+ {
+  "question": "Qual é a altitude do Pico do Arieiro, na Madeira?",
+  "answer": "1818",
+  "unit": "metros",
+  "notes": "É o terceiro pico mais alto da ilha; o Pico Ruivo tem 1862 m."
+ }
+]

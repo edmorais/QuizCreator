@@ -1,0 +1,57 @@
+[
+ {
+  "words": [
+   "Ló",
+   "Forma",
+   "Ralado",
+   "Milho"
+  ],
+  "answer": "Pão",
+  "difficulty": "1",
+  "notes": "Pão de ló, pão de forma, pão ralado, pão de milho."
+ },
+ {
+  "words": [
+   "Rei",
+   "Caco",
+   "Aniversário",
+   "Arroz"
+  ],
+  "answer": "Bolo",
+  "difficulty": "1",
+  "notes": "Bolo-rei, bolo do caco, bolo de aniversário, bolo de arroz."
+ },
+ {
+  "words": [
+   "Cadente",
+   "Polar",
+   "Michelin",
+   "Serra"
+  ],
+  "answer": "Estrela",
+  "difficulty": "2",
+  "notes": "Estrela cadente, Estrela Polar, estrela Michelin, Serra da Estrela."
+ },
+ {
+  "words": [
+   "Comboio",
+   "Meta",
+   "Montagem",
+   "Cascais"
+  ],
+  "answer": "Linha",
+  "difficulty": "2",
+  "notes": "Linha de comboio, linha de meta, linha de montagem, Linha de Cascais."
+ },
+ {
+  "words": [
+   "Valores",
+   "Estudo",
+   "Canguru",
+   "Senhora"
+  ],
+  "answer": "Bolsa",
+  "difficulty": "3",
+  "notes": "Bolsa de Valores, bolsa de estudo, bolsa do canguru, bolsa de senhora."
+ }
+]
