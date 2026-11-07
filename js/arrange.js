@@ -111,19 +111,27 @@ function setView(v) {
   renderView();
 }
 
+function spreadText() {
+  const w = spreadWindow(quiz);
+  return w < 2 ? 'sem regra de repetição' : w === 2 ? 'o mesmo tema nunca aparece em perguntas seguidas' : `em ${w} perguntas seguidas não se repete o tema`;
+}
+
 function renderView() {
   $('#grid-wrap').hidden = view !== 'themes';
   $('#order-view').hidden = view !== 'order';
-  $('#view-themes').setAttribute('aria-pressed', String(view === 'themes'));
-  $('#view-order').setAttribute('aria-pressed', String(view === 'order'));
+  $('#config-view').hidden = view !== 'config';
+  $('#specials-wrap').classList.toggle('hidden-in-config', view === 'config');
+  ['themes', 'order', 'config'].forEach(v => $(`#view-${v}`).setAttribute('aria-pressed', String(view === v)));
   $('#view-hint').textContent = view === 'themes'
     ? 'Arrasta para trocar a posição dentro do tema · duplo-clique no tema para o renomear'
-    : `Arrasta para mudar a ordem · em ${SPREAD_WINDOW} perguntas seguidas não se repete o tema`;
+    : view === 'order' ? `Arrasta para mudar a ordem · ${spreadText()}` : 'As alterações aplicam-se a este quiz';
   if (view === 'order') renderOrderView();
+  if (view === 'config') renderConfig();
 }
 
 $('#view-themes').onclick = () => setView('themes');
 $('#view-order').onclick = () => setView('order');
+$('#view-config').onclick = () => setView('config');
 
 let orderDrag = null; // índice na ordem a ser arrastado
 
@@ -131,40 +139,52 @@ function renderOrderView() {
   const p = quiz.presentation;
   const mixed = p.mode === 'mixed';
   const order = presentationOrder(quiz);
-  const conflicts = mixed ? orderConflicts(order) : new Set();
+  const checking = quiz.config.checks.order && spreadWindow(quiz) >= 2;
+  const conflicts = mixed && checking ? orderConflicts(quiz, order) : new Set();
 
   $('#ov-mode').value = p.mode;
-  $('#ov-size').value = String(p.roundSize);
+  renderRoundsSelect($('#ov-rounds-count'));
   $('#ov-size-wrap').hidden = !mixed;
   const status = $('#ov-status');
-  status.className = 'ov-status ' + (!mixed ? '' : conflicts.size ? 'bad' : 'ok');
+  status.className = 'ov-status ' + (!mixed || !checking ? '' : conflicts.size ? 'bad' : 'ok');
   status.textContent = !mixed
     ? 'Agrupada por tema: usa “Baralhar ordem” para misturar.'
-    : conflicts.size
-      ? `⚠ ${clashText(conflicts.size)}`
-      : `✓ Nenhum tema se repete em ${SPREAD_WINDOW} perguntas seguidas`;
+    : !checking ? 'Regra de repetição desligada.'
+      : conflicts.size ? `⚠ ${clashText(conflicts.size)}` : `✓ Regra cumprida: ${spreadText()}`;
 
+  const index = new Map(order.map((k, i) => [k, i]));
   const sections = rounds(quiz).map(r => el('section', { class: 'ov-round' },
     el('header', { class: 'ov-round-head' }, el('strong', {}, r.title), el('span', {}, r.subtitle)),
-    el('div', { class: 'ov-list' }, r.items.map(it => orderCard(it, it.n - 2, conflicts.has(it.n - 2)))),
+    el('div', { class: 'ov-list' }, r.items.map(it => orderCard(it, index.get(it.key), conflicts.has(index.get(it.key))))),
   ));
   $('#ov-rounds').replaceChildren(...sections);
 }
 
+// Número de rondas na ordem misturada: de 1 até uma ronda por pergunta (máx. 20 opções úteis).
+function renderRoundsSelect(select) {
+  const total = themedTotal(quiz);
+  const max = Math.min(total, 20);
+  select.replaceChildren(...Array.from({ length: max }, (_, i) => {
+    const n = i + 1;
+    const size = Math.ceil(total / n);
+    return el('option', { value: String(n) }, `${n} ${n === 1 ? 'ronda' : 'rondas'} (${size === Math.floor(total / n) ? size : `${Math.floor(total / n)}–${size}`} perguntas)`);
+  }));
+  select.value = String(Math.min(max, quiz.presentation.rounds));
+}
+
 function clashText(n) {
-  return n === 1
-    ? `1 pergunta repete o tema em ${SPREAD_WINDOW} seguidas`
-    : `${n} perguntas repetem o tema em ${SPREAD_WINDOW} seguidas`;
+  const w = spreadWindow(quiz);
+  const rule = w === 2 ? 'repete o tema da pergunta anterior' : `repete o tema em ${w} seguidas`;
+  return n === 1 ? `1 pergunta ${rule}` : `${n} perguntas ${rule.replace('repete', 'repetem')}`;
 }
 
 function orderCard(it, index, clash) {
-  const { t, q: qi } = parseKey(it.key);
-  const ref = { kind: 'theme', t, q: qi };
+  const ref = { kind: 'theme', t: it.t, q: parseKey(it.key).q };
   const q = it.q;
   const state = isFilled(q) ? 'filled' : isStarted(q) ? 'partial' : 'empty';
   const node = el('div', {
     class: `ov-card ${state}${clash ? ' clash' : ''}`, style: `--c:${it.color}`, tabindex: '0', draggable: 'true',
-    title: clash ? `O tema “${it.themeName}” já apareceu nas ${SPREAD_WINDOW - 1} perguntas anteriores` : it.themeName,
+    title: clash ? `O tema “${it.themeName}” já apareceu nas ${spreadWindow(quiz) - 1} perguntas anteriores` : it.themeName,
     onclick: () => openEditor(ref),
     onkeydown: e => { if (e.key === 'Enter') openEditor(ref); },
   },
@@ -208,7 +228,7 @@ function moveInOrder(from, to) {
   if (from === to) return;
   const p = quiz.presentation;
   if (p.mode !== 'mixed') {
-    p.order = themeOrder(quiz.perTheme);
+    p.order = themeOrder(quiz);
     p.mode = 'mixed';
   }
   const [key] = p.order.splice(from, 1);
@@ -223,8 +243,8 @@ $('#ov-mode').addEventListener('change', e => {
   save();
   render();
 });
-$('#ov-size').addEventListener('change', e => {
-  quiz.presentation.roundSize = Number(e.target.value);
+$('#ov-rounds-count').addEventListener('change', e => {
+  quiz.presentation.rounds = Number(e.target.value);
   save();
   render();
 });
@@ -236,38 +256,14 @@ $('#ov-size').addEventListener('change', e => {
 function shuffleOrder() {
   pushQuizUndo('baralhar a ordem');
   quiz.presentation.mode = 'mixed';
-  quiz.presentation.order = mixedOrder(quiz.perTheme);
+  quiz.presentation.order = mixedOrder(quiz);
   save();
   if (view !== 'order') setView('order');
   render();
-  toast(`Ordem baralhada: nenhum tema se repete em ${SPREAD_WINDOW} perguntas seguidas.`, { label: 'Desfazer', run: popQuizUndo });
+  toast(`Ordem baralhada: ${spreadText()}.`, { label: 'Desfazer', run: popQuizUndo });
 }
 
 $('#btn-shuffle').onclick = shuffleOrder;
-
-// ---------------------------------------------------------------------------
-// Tamanho do quiz
-// ---------------------------------------------------------------------------
-
-$('#quiz-size').replaceChildren(...Array.from({ length: MAX_PER_THEME - MIN_PER_THEME + 1 }, (_, i) => {
-  const total = THEMES.length * (MIN_PER_THEME + i);
-  return el('option', { value: String(total) }, `${total} perguntas (${MIN_PER_THEME + i} por tema)`);
-}));
-
-$('#quiz-size').addEventListener('change', e => {
-  const next = Number(e.target.value) / THEMES.length;
-  const lost = quiz.themes.flatMap(t => t.questions.slice(next)).filter(isStarted).length;
-  if (lost && !confirm(`Reduzir o quiz apaga ${lost} ${lost === 1 ? 'pergunta' : 'perguntas'} das últimas linhas da grelha. Continuar? (podes desfazer)`)) {
-    e.target.value = String(THEMES.length * quiz.perTheme);
-    return;
-  }
-  pushQuizUndo('mudar o tamanho do quiz');
-  const mixed = quiz.presentation.mode === 'mixed';
-  resizeQuiz(quiz, next);
-  save();
-  render();
-  toast(`O quiz tem agora ${THEMES.length * next} perguntas temáticas.${mixed ? ' A ordem foi baralhada de novo.' : ''}`, { label: 'Desfazer', run: popQuizUndo });
-});
 
 // ---------------------------------------------------------------------------
 // Preencher o quiz com perguntas aleatórias do banco
@@ -334,11 +330,11 @@ function fillQuiz({ replace, specials }) {
   };
   let filled = 0;
 
-  for (const [kind, info] of [['approx', APPROX], ['madeira', MADEIRA], ['guilhotina', GUILHOTINA]]) {
-    const ref = { kind };
+  for (const sp of enabledSpecials(quiz)) {
+    const ref = { kind: 'special', id: sp.id };
     if (!isTarget(ref)) continue;
-    const e = take(info.id, [() => true]);
-    if (e) { put(ref, e); filled++; } else missing.push(info.name);
+    const e = take(specialBankId(sp), [() => true]);
+    if (e) { put(ref, e); filled++; } else missing.push(sp.name);
   }
 
   quiz.themes.forEach((theme, t) => {
@@ -354,22 +350,27 @@ function fillQuiz({ replace, specials }) {
     wanted = wanted.slice(0, slots.length);
 
     let matches = staying.filter(q => q.type === 'match').length;
-    let portoNeeded = THEMES[t].id === 'geografia' && !staying.some(q => q.porto);
+    // Etiquetas que as regras pedem para este tema, e quantas ainda faltam.
+    const tagNeed = new Map();
+    quiz.config.rules.filter(r => r.theme === theme.id).forEach(r => {
+      const left = r.min - staying.filter(q => hasTag(q, r.tag)).length;
+      if (left > 0) tagNeed.set(r.tag, Math.max(tagNeed.get(r.tag) || 0, left));
+    });
     const chosen = [];
     const maxMatch = fillMaxMatch(quiz.perTheme);
     for (const d of wanted) {
       const noMatch = e => matches < maxMatch || e.q.type !== 'match';
-      const porto = e => !portoNeeded || e.q.porto;
+      const tagged = e => ![...tagNeed].some(([, n]) => n > 0) || [...tagNeed].some(([tag, n]) => n > 0 && hasTag(e.q, tag));
       // Do mais exigente para o mais tolerante, se o banco não tiver o suficiente.
-      const e = take(THEMES[t].id, [
-        e => e.q.difficulty === d && noMatch(e) && porto(e),
-        e => noMatch(e) && porto(e),
+      const e = take(theme.id, [
+        e => e.q.difficulty === d && noMatch(e) && tagged(e),
+        e => noMatch(e) && tagged(e),
         e => noMatch(e),
         () => true,
       ]);
       if (!e) continue;
       if (e.q.type === 'match') matches++;
-      if (e.q.porto) portoNeeded = false;
+      tagNeed.forEach((n, tag) => { if (hasTag(e.q, tag)) tagNeed.set(tag, n - 1); });
       chosen.push(e);
     }
     if (chosen.length < slots.length) missing.push(`${theme.name} (${slots.length - chosen.length})`);
@@ -408,7 +409,10 @@ $('#btn-fill').onclick = () => {
   const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
   $('#fill-rule-mix').textContent = `Em cada tema: ${count(mix[1], 'fácil', 'fáceis')}, ${count(mix[2], 'média', 'médias')} e ${count(mix[3], 'difícil', 'difíceis')}`;
   const maxMatch = fillMaxMatch(quiz.perTheme);
-  $('#fill-rule-match').textContent = `No máximo ${count(maxMatch, 'correspondência', 'correspondências')} por tema e pelo menos 1 pergunta sobre o Porto`;
+  const rules = quiz.config.rules.filter(r => quiz.themes.some(t => t.id === r.theme))
+    .map(r => `${count(r.min, 'pergunta', 'perguntas')} “${r.tag}” em ${themeInfo(r.theme).name}`);
+  $('#fill-rule-match').textContent = `No máximo ${count(maxMatch, 'correspondência', 'correspondências')} por tema`
+    + (rules.length ? `, e pelo menos ${rules.join('; ')}` : '');
   updateFillSummary();
   fillDialog.showModal();
 };

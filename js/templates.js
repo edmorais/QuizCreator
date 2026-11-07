@@ -1019,9 +1019,9 @@ class Deck {
     if (withNotes) p.s.addNotes(noteLines(info.q).join('\n'));
   }
 
-  reveal(q) {
+  reveal(q, kick = 'Aproximação · desempate', color = bright(APPROX.color)) {
     const p = this.slide('question');
-    this.T.header(p, { kick: 'Aproximação · desempate', n: '', color: bright(APPROX.color) });
+    this.T.header(p, { kick, n: '', color });
     this.T.reveal(p, q);
     return p;
   }

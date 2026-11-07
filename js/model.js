@@ -5,30 +5,36 @@
 // ---------------------------------------------------------------------------
 
 const FORMAT = 'quiznight-quiz';
-const VERSION = 2;
-// Perguntas por tema: 2 a 12, ou seja, 16 a 96 perguntas temáticas (múltiplos de 8).
+const VERSION = 3;
+const MAX_QUESTIONS = 100;   // no total, incluindo as perguntas especiais
+const MAX_THEMES = 12;
+const MAX_EXTRAS = 4;
 const DEFAULT_PER_THEME = 6;
-const MIN_PER_THEME = 2;
-const MAX_PER_THEME = 12;
+const DEFAULT_SPREAD = 5;    // não repetir o tema em 5 perguntas seguidas
 
-const THEMES = [
+// Temas com perguntas na base (podem ligar-se e desligar-se).
+const CATALOG = [
   { id: 'historia',   name: 'História',                                  color: '#b5562b' },
   { id: 'ciencias',   name: 'Ciências Exatas',                           color: '#2f6db5' },
   { id: 'desporto',   name: 'Desporto e Jogos',                          color: '#2e8b57' },
   { id: 'musica',     name: 'Música, Cinema e TV',                       color: '#8e44ad' },
   { id: 'arte',       name: 'Arte e Design',                             color: '#c08a00' },
   { id: 'literatura', name: 'Literatura, Filosofia e Ciências Sociais',  color: '#8b5a2b' },
-  { id: 'atualidade', name: 'Atualidade',                                color: '#c0392b' },
   { id: 'geografia',  name: 'Locais e Geografia',                        color: '#16808a' },
 ];
+// Atualidade é um tema personalizado que vem ligado por omissão.
+const ATUALIDADE = { id: 'atualidade', name: 'Atualidade', color: '#c0392b', custom: true };
+const DEFAULT_THEMES = ['historia', 'ciencias', 'desporto', 'musica', 'arte', 'literatura', 'atualidade', 'geografia'];
+
+// Cores para temas e perguntas extra criados pelo utilizador.
+const CUSTOM_COLORS = ['#c0392b', '#d35400', '#7d6608', '#1e8449', '#117a65', '#1f618d', '#6c3483', '#a93226', '#b9770e', '#5d6d7e', '#943126', '#0e6655'];
+
 const APPROX = { id: 'approx', name: 'Aproximação', color: '#5b5f97' };
 const MADEIRA = { id: 'madeira', name: 'Madeira', color: '#0f6e5a' };
 const GUILHOTINA = { id: 'guilhotina', name: 'Guilhotina', color: '#b8336a' };
+const EXTRA_COLOR = '#c46f1b';
 const GUILHOTINA_WORDS = 4;
 const GUILHOTINA_PROMPT = 'Que palavra liga estas quatro?';
-
-// A guilhotina é sempre a última: Madeira (1) + perguntas dos temas + 1.
-function guilhotinaNumber(qz) { return 2 + THEMES.length * qz.perTheme; }
 
 // Tipo de slot de cada tema do banco: a aproximação e a guilhotina têm formato próprio.
 function kindOfTheme(themeId) {
@@ -63,18 +69,18 @@ function emptyQuestion() {
     options: [], correct: -1,          // escolha múltipla
     pairs: [], matchOrder: [],         // correspondência: pares certos + ordem baralhada da coluna B
     media: null,                       // {kind, name, mime, data?, url?}
-    notes: '', source: '', difficulty: '', points: 1, verified: false, porto: false,
+    notes: '', source: '', difficulty: '', points: 1, verified: false, tags: [],
   };
 }
 
 function emptyApprox() {
-  return { id: uid(), question: '', answer: '', unit: '', media: null, notes: '', source: '', verified: false };
+  return { id: uid(), question: '', answer: '', unit: '', media: null, notes: '', source: '', verified: false, tags: [] };
 }
 
 function emptyGuilhotina() {
   return {
     id: uid(), type: 'guilhotina', question: '', words: Array(GUILHOTINA_WORDS).fill(''), answer: '',
-    media: null, notes: '', source: '', difficulty: '', points: 1, verified: false,
+    media: null, notes: '', source: '', difficulty: '', points: 1, verified: false, tags: [],
   };
 }
 
@@ -84,27 +90,76 @@ function emptyForKind(kind) {
   return emptyQuestion();
 }
 
+function catalogTheme(id) {
+  if (id === ATUALIDADE.id) return ATUALIDADE;
+  return CATALOG.find(t => t.id === id) || null;
+}
+
+function newTheme(info, perTheme) {
+  return { id: info.id, name: info.name, color: info.color, custom: !!info.custom, questions: Array.from({ length: perTheme }, emptyQuestion) };
+}
+
+function defaultSpecials() {
+  return [
+    { id: 'approx', kind: 'approx', name: APPROX.name, color: APPROX.color, enabled: true, position: 'start', numbered: false, reveal: true, q: emptyApprox() },
+    { id: 'local', kind: 'question', name: MADEIRA.name, color: MADEIRA.color, enabled: true, position: 'start', numbered: true, q: emptyQuestion() },
+    { id: 'guilhotina', kind: 'guilhotina', name: GUILHOTINA.name, color: GUILHOTINA.color, enabled: true, position: 'end', numbered: true, q: emptyGuilhotina() },
+  ];
+}
+
+function newExtra(qz) {
+  const n = qz.specials.filter(s => s.id.startsWith('extra')).length;
+  return {
+    id: `extra-${uid().slice(0, 8)}`, kind: 'question', name: n ? `Pergunta extra ${n + 1}` : 'Pergunta extra',
+    color: EXTRA_COLOR, enabled: true, position: 'end', numbered: true, q: emptyQuestion(),
+  };
+}
+
+function defaultConfig(themes) {
+  return {
+    spread: Math.min(DEFAULT_SPREAD, Math.max(2, themes.length)),
+    checks: { missing: true, unverified: true, duplicates: true, reused: true, order: true },
+    rules: themes.some(t => t.id === 'geografia') ? [{ id: uid().slice(0, 8), theme: 'geografia', tag: 'Porto', min: 1 }] : [],
+  };
+}
+
 function defaultPresentation() {
-  return { mode: 'themes', roundSize: 12, answers: 'round', notes: true, order: [], template: DEFAULT_TEMPLATE };
+  return { mode: 'themes', rounds: 4, answers: 'round', notes: true, order: [], template: DEFAULT_TEMPLATE };
 }
 
 function newQuiz(perTheme = DEFAULT_PER_THEME) {
+  const themes = DEFAULT_THEMES.map(id => newTheme(catalogTheme(id), perTheme));
   return {
     format: FORMAT,
     version: VERSION,
     meta: { title: 'Quiz Night', date: todayISO(), venue: '' },
     perTheme,
-    approximation: emptyApprox(),
-    madeira: emptyQuestion(),
-    themes: THEMES.map(t => ({ id: t.id, name: t.name, questions: Array.from({ length: perTheme }, emptyQuestion) })),
-    guilhotina: emptyGuilhotina(),
+    themes,
+    parked: [],                         // temas desligados (guardam as perguntas)
+    specials: defaultSpecials(),
+    config: defaultConfig(themes),
     presentation: defaultPresentation(),
     updatedAt: new Date().toISOString(),
   };
 }
 
+// Categoria do banco de cada pergunta especial. A pergunta local chamada
+// «Madeira» usa as perguntas da Madeira; outro nome começa uma categoria nova.
+function specialBankId(sp) {
+  if (sp.kind === 'approx') return APPROX.id;
+  if (sp.kind === 'guilhotina') return GUILHOTINA.id;
+  if (sp.id === 'local') return normText(sp.name) === 'madeira' ? MADEIRA.id : `local:${slugify(sp.name)}`;
+  return `extra:${slugify(sp.name)}`;
+}
+
+function enabledSpecials(qz) { return qz.specials.filter(s => s.enabled); }
+function specialsAt(qz, position) { return enabledSpecials(qz).filter(s => s.position === position); }
+function themedTotal(qz) { return qz.themes.length * qz.perTheme; }
+function quizTotal(qz) { return themedTotal(qz) + enabledSpecials(qz).length; }
+function maxPerTheme(qz) { return Math.max(1, Math.floor((MAX_QUESTIONS - enabledSpecials(qz).length) / Math.max(1, qz.themes.length))); }
+
 // ---------------------------------------------------------------------------
-// Normalização (importação e migração da v1)
+// Normalização (importação e migração das versões 1 e 2)
 // ---------------------------------------------------------------------------
 
 const str = v => (v === undefined || v === null) ? '' : String(v);
@@ -132,13 +187,20 @@ function normalizeMedia(m) {
   return { kind: m.kind, name: str(m.name), mime: str(m.mime), data, url: data ? '' : url };
 }
 
-// kind: 'approx', 'guilhotina' ou 'theme' (perguntas normais, incluindo a da Madeira).
+function normalizeTags(src) {
+  const tags = Array.isArray(src.tags) ? src.tags.map(t => str(t).trim()).filter(Boolean) : [];
+  if (src.porto && !tags.some(t => normText(t) === 'porto')) tags.push('Porto'); // versões anteriores
+  return [...new Set(tags)];
+}
+
+// kind: 'approx', 'guilhotina' ou 'theme' (perguntas normais, incluindo a local e as extra).
 function normalizeQuestion(src, kind = 'theme') {
   const q = emptyForKind(kind);
   if (!src || typeof src !== 'object') return q;
   if (src.id) q.id = str(src.id);
   for (const k of ['question', 'answer', 'notes', 'source']) q[k] = str(src[k]);
   q.verified = !!src.verified;
+  q.tags = normalizeTags(src);
   // v1 tinha só um URL de imagem
   q.media = normalizeMedia(src.media) || (src.image ? { kind: 'image', name: '', mime: '', data: '', url: str(src.image) } : null);
   if (kind === 'approx') {
@@ -161,31 +223,72 @@ function normalizeQuestion(src, kind = 'theme') {
     ? src.pairs.filter(p => p && typeof p === 'object').map(p => ({ left: str(p.left), right: str(p.right) }))
     : [];
   q.matchOrder = isPermutation(src.matchOrder, q.pairs.length) ? src.matchOrder.slice() : shuffledIndices(q.pairs.length);
-  q.porto = !!src.porto;
   return q;
 }
 
-function normalizePresentation(p, perTheme) {
-  const out = defaultPresentation();
-  if (!p || typeof p !== 'object') return out;
-  if (['themes', 'mixed'].includes(p.mode)) out.mode = p.mode;
-  if (Number.isInteger(p.roundSize) && p.roundSize >= 1 && p.roundSize <= THEMES.length * MAX_PER_THEME) out.roundSize = p.roundSize;
-  if (['round', 'end', 'none'].includes(p.answers)) out.answers = p.answers;
-  if (typeof p.notes === 'boolean') out.notes = p.notes;
-  if (isValidOrder(p.order, perTheme)) out.order = p.order.slice();
-  if (TEMPLATE_IDS.includes(p.template)) out.template = p.template;
+function normalizeTheme(src, perTheme, notes) {
+  const info = catalogTheme(str(src.id));
+  const theme = {
+    id: str(src.id) || `custom-${uid().slice(0, 8)}`,
+    name: str(src.name) || (info ? info.name : 'Tema'),
+    color: /^#[0-9a-f]{6}$/i.test(str(src.color)) ? str(src.color) : (info ? info.color : CUSTOM_COLORS[0]),
+    custom: info ? !!info.custom : true,
+  };
+  const qs = Array.isArray(src.questions) ? src.questions : [];
+  if (notes && qs.length > perTheme && qs.slice(perTheme).some(q => q && (q.question || q.answer))) {
+    notes.push(`"${theme.name}" tinha ${qs.length} perguntas; só as primeiras ${perTheme} foram importadas.`);
+  }
+  theme.questions = Array.from({ length: perTheme }, (_, j) => normalizeQuestion(qs[j]));
+  return theme;
+}
+
+function normalizeSpecial(src) {
+  const kind = ['approx', 'question', 'guilhotina'].includes(src.kind) ? src.kind : 'question';
+  return {
+    id: str(src.id) || `extra-${uid().slice(0, 8)}`,
+    kind,
+    name: str(src.name) || (kind === 'approx' ? APPROX.name : kind === 'guilhotina' ? GUILHOTINA.name : 'Pergunta extra'),
+    color: /^#[0-9a-f]{6}$/i.test(str(src.color)) ? str(src.color) : EXTRA_COLOR,
+    enabled: src.enabled !== false,
+    position: src.position === 'end' ? 'end' : 'start',
+    numbered: !!src.numbered,
+    ...(kind === 'approx' ? { reveal: src.reveal !== false } : {}),
+    q: normalizeQuestion(src.q, kind === 'question' ? 'theme' : kind),
+  };
+}
+
+function normalizeConfig(c, themes) {
+  const out = defaultConfig(themes);
+  if (!c || typeof c !== 'object') return out;
+  if (Number.isInteger(c.spread)) out.spread = c.spread;
+  if (c.checks && typeof c.checks === 'object') {
+    for (const k of Object.keys(out.checks)) if (typeof c.checks[k] === 'boolean') out.checks[k] = c.checks[k];
+  }
+  if (Array.isArray(c.rules)) {
+    out.rules = c.rules.filter(r => r && typeof r === 'object').map(r => ({
+      id: str(r.id) || uid().slice(0, 8), theme: str(r.theme), tag: str(r.tag).trim(), min: Math.max(1, Number(r.min) || 1),
+    })).filter(r => r.tag);
+  }
   return out;
 }
 
-function clampPerTheme(n) { return Math.min(MAX_PER_THEME, Math.max(MIN_PER_THEME, n)); }
-
-// Muda o tamanho do quiz: acrescenta células vazias ou corta as últimas de cada tema.
-function resizeQuiz(qz, perTheme) {
-  qz.themes.forEach(theme => {
-    theme.questions = Array.from({ length: perTheme }, (_, i) => theme.questions[i] || emptyQuestion());
-  });
-  qz.perTheme = perTheme;
-  qz.presentation.order = qz.presentation.mode === 'mixed' ? mixedOrder(perTheme) : [];
+function normalizePresentation(p, qz) {
+  const out = defaultPresentation();
+  if (!p || typeof p !== 'object') return out;
+  if (['themes', 'mixed'].includes(p.mode)) out.mode = p.mode;
+  if (Number.isInteger(p.rounds) && p.rounds >= 1) out.rounds = p.rounds;
+  else if (Number.isInteger(p.roundSize) && p.roundSize >= 1) out.rounds = Math.ceil(themedTotal(qz) / p.roundSize); // v2
+  if (['round', 'end', 'none'].includes(p.answers)) out.answers = p.answers;
+  if (typeof p.notes === 'boolean') out.notes = p.notes;
+  if (TEMPLATE_IDS.includes(p.template)) out.template = p.template;
+  // v2 guardava a ordem por índice do tema ("3:2"); a v3 por id ("musica:2").
+  const V2_ORDER = ['historia', 'ciencias', 'desporto', 'musica', 'arte', 'literatura', 'atualidade', 'geografia'];
+  const order = Array.isArray(p.order) ? p.order.map(k => {
+    const [t, q] = str(k).split(':');
+    return /^\d+$/.test(t) ? `${V2_ORDER[Number(t)]}:${q}` : str(k);
+  }) : [];
+  if (isValidOrder(order, qz)) out.order = order;
+  return out;
 }
 
 // Converte qualquer JSON razoável num quiz válido (campos em falta ficam vazios).
@@ -193,33 +296,50 @@ function normalizeQuiz(raw) {
   if (!raw || typeof raw !== 'object') throw new Error('O ficheiro não contém um objeto JSON.');
   if (raw.format === 'quiznight-bank') throw new Error('Este ficheiro é um banco de perguntas — importa-o no Banco.');
   const notes = [];
-  const srcThemes = Array.isArray(raw.themes) ? raw.themes : [];
-  // Quizzes antigos não indicam o tamanho: deduz-se da maior coluna.
-  const longest = Math.max(0, ...srcThemes.map(t => (t && Array.isArray(t.questions) ? t.questions.length : 0)));
-  const perTheme = clampPerTheme(Number.isInteger(raw.perTheme) ? raw.perTheme : Math.max(DEFAULT_PER_THEME, longest));
-  const quiz = newQuiz(perTheme);
+  const v3 = Number(raw.version) >= 3;
+  const quiz = newQuiz();
 
   if (raw.meta) Object.assign(quiz.meta, {
     title: str(raw.meta.title) || quiz.meta.title,
     date: str(raw.meta.date) || quiz.meta.date,
     venue: str(raw.meta.venue),
   });
-  quiz.approximation = normalizeQuestion(raw.approximation, 'approx');
-  quiz.madeira = normalizeQuestion(raw.madeira);
-  quiz.guilhotina = normalizeQuestion(raw.guilhotina, 'guilhotina');
 
-  quiz.themes.forEach((theme, i) => {
-    const src = srcThemes.find(t => t && t.id === theme.id) || srcThemes[i];
-    if (!src) return;
-    if (src.name) theme.name = str(src.name);
-    const qs = Array.isArray(src.questions) ? src.questions : [];
-    if (qs.length > perTheme) notes.push(`"${theme.name}" tinha ${qs.length} perguntas; só as primeiras ${perTheme} foram importadas.`);
-    theme.questions = theme.questions.map((_, j) => normalizeQuestion(qs[j]));
-  });
-  if (srcThemes.length > THEMES.length) notes.push(`O ficheiro tinha ${srcThemes.length} temas; só ${THEMES.length} foram importados.`);
+  // Especiais: a v2 tinha três campos fixos.
+  quiz.specials = v3 && Array.isArray(raw.specials)
+    ? raw.specials.filter(s => s && typeof s === 'object').map(normalizeSpecial)
+    : defaultSpecials().map(sp => ({
+      ...sp,
+      q: normalizeQuestion(sp.id === 'approx' ? raw.approximation : sp.id === 'local' ? raw.madeira : raw.guilhotina, sp.kind === 'question' ? 'theme' : sp.kind),
+    }));
 
-  quiz.presentation = normalizePresentation(raw.presentation, perTheme);
+  // Temas: na v2 eram sempre os oito, pela ordem do catálogo.
+  const srcThemes = (Array.isArray(raw.themes) ? raw.themes : []).filter(t => t && typeof t === 'object');
+  const v2Themes = v3 ? srcThemes : DEFAULT_THEMES.map((id, i) => ({ ...(srcThemes.find(t => t.id === id) || srcThemes[i] || {}), id }));
+  const count = Math.max(1, Math.min(MAX_THEMES, v2Themes.length || DEFAULT_THEMES.length));
+  const longest = Math.max(0, ...v2Themes.map(t => (Array.isArray(t.questions) ? t.questions.length : 0)));
+  const limit = Math.max(1, Math.floor((MAX_QUESTIONS - enabledSpecials(quiz).length) / count));
+  const wanted = Number.isInteger(raw.perTheme) ? raw.perTheme : Math.max(DEFAULT_PER_THEME, longest);
+  quiz.perTheme = Math.min(limit, Math.max(1, wanted));
+  quiz.themes = (v2Themes.length ? v2Themes : DEFAULT_THEMES.map(catalogTheme)).slice(0, MAX_THEMES).map(t => normalizeTheme(t, quiz.perTheme, notes));
+  if (v2Themes.length > MAX_THEMES) notes.push(`O ficheiro tinha ${v2Themes.length} temas; só ${MAX_THEMES} foram importados.`);
+  quiz.parked = v3 && Array.isArray(raw.parked) ? raw.parked.filter(t => t && typeof t === 'object').map(t => normalizeTheme(t, Array.isArray(t.questions) ? t.questions.length : quiz.perTheme)) : [];
+
+  quiz.config = normalizeConfig(raw.config, quiz.themes);
+  quiz.presentation = normalizePresentation(raw.presentation, quiz);
+  fixQuiz(quiz);
   return { quiz, notes };
+}
+
+// Depois de mudar temas, especiais ou tamanho: põe tudo dentro dos limites.
+function fixQuiz(qz) {
+  qz.perTheme = Math.min(maxPerTheme(qz), Math.max(1, qz.perTheme));
+  qz.themes.forEach(theme => {
+    theme.questions = Array.from({ length: qz.perTheme }, (_, i) => theme.questions[i] || emptyQuestion());
+  });
+  qz.config.spread = Math.min(Math.max(2, qz.themes.length), Math.max(2, qz.config.spread));
+  qz.presentation.rounds = Math.min(themedTotal(qz), Math.max(1, qz.presentation.rounds));
+  if (!isValidOrder(qz.presentation.order, qz)) qz.presentation.order = qz.presentation.mode === 'mixed' ? mixedOrder(qz) : [];
 }
 
 // ---------------------------------------------------------------------------
@@ -260,38 +380,45 @@ function isStarted(q) {
     || (q.pairs || []).length > 0 || (q.words || []).some(w => str(w).trim()) || !!q.media;
 }
 
+function hasTag(q, tag) { return (q.tags || []).some(t => normText(t) === normText(tag)); }
+
 // ---------------------------------------------------------------------------
 // Ordem de apresentação
 // ---------------------------------------------------------------------------
 
-function slotKey(t, q) { return `${t}:${q}`; }
-function parseKey(key) { const [t, q] = key.split(':').map(Number); return { t, q }; }
+// As chaves usam o id do tema, para a ordem sobreviver a mudanças nos temas.
+function slotKey(themeId, q) { return `${themeId}:${q}`; }
+function parseKey(key) { const i = key.lastIndexOf(':'); return { id: key.slice(0, i), q: Number(key.slice(i + 1)) }; }
+function themeIndex(qz, id) { return qz.themes.findIndex(t => t.id === id); }
 
-function themeOrder(perTheme) {
+function themeOrder(qz) {
   const out = [];
-  THEMES.forEach((_, t) => { for (let q = 0; q < perTheme; q++) out.push(slotKey(t, q)); });
+  qz.themes.forEach(t => { for (let q = 0; q < qz.perTheme; q++) out.push(slotKey(t.id, q)); });
   return out;
 }
 
-function isValidOrder(order, perTheme) {
-  if (!Array.isArray(order) || order.length !== THEMES.length * perTheme) return false;
-  const all = new Set(themeOrder(perTheme));
+function isValidOrder(order, qz) {
+  if (!Array.isArray(order) || order.length !== themedTotal(qz)) return false;
+  const all = new Set(themeOrder(qz));
   return new Set(order).size === order.length && order.every(k => all.has(k));
 }
 
-// Em qualquer sequência de SPREAD_WINDOW perguntas seguidas não se repete o tema.
-const SPREAD_WINDOW = 5;
+// Tamanho da janela sem repetições: 2 = nunca o mesmo tema em perguntas seguidas.
+function spreadWindow(qz) { return qz.themes.length < 2 ? 1 : Math.min(qz.themes.length, Math.max(2, qz.config.spread)); }
 
-// Ordem aleatória que respeita SPREAD_WINDOW.
+// Ordem aleatória que respeita a janela sem repetições.
 // Dentro de cada tema mantém-se a ordem da grelha (útil para graduar a dificuldade).
-function mixedOrder(perTheme) {
-  const n = THEMES.length;
-  const total = n * perTheme;
+function mixedOrder(qz) {
+  const ids = qz.themes.map(t => t.id);
+  const n = ids.length;
+  const per = qz.perTheme;
+  const total = n * per;
+  const window = spreadWindow(qz);
   for (let attempt = 0; attempt < 500; attempt++) {
-    const left = Array(n).fill(perTheme);
+    const left = Array(n).fill(per);
     const seq = [];
     while (seq.length < total) {
-      const recent = new Set(seq.slice(-(SPREAD_WINDOW - 1)));
+      const recent = new Set(seq.slice(-(window - 1)));
       const allowed = left.map((_, t) => t).filter(t => left[t] > 0 && !recent.has(t));
       if (!allowed.length) break;
       // Dar mais peso aos temas com mais perguntas por colocar evita becos sem saída no fim.
@@ -307,56 +434,70 @@ function mixedOrder(perTheme) {
     }
     if (seq.length === total) {
       const next = Array(n).fill(0);
-      return seq.map(t => slotKey(t, next[t]++));
+      return seq.map(t => slotKey(ids[t], next[t]++));
     }
   }
-  // Recurso (nunca deve ser preciso): a mesma permutação de temas repetida cumpre a regra.
+  // Recurso: a mesma permutação de temas repetida cumpre qualquer janela até n.
   const perm = shuffledIndices(n);
-  return Array.from({ length: total }, (_, i) => slotKey(perm[i % n], Math.floor(i / n)));
+  return Array.from({ length: total }, (_, i) => slotKey(ids[perm[i % n]], Math.floor(i / n)));
 }
 
-// Posições (índices na ordem) cujo tema já apareceu nas SPREAD_WINDOW - 1 anteriores.
-function orderConflicts(order) {
-  const themes = order.map(k => parseKey(k).t);
+// Posições (índices na ordem) cujo tema já apareceu nas perguntas anteriores da janela.
+function orderConflicts(qz, order) {
+  const window = spreadWindow(qz);
+  const themes = order.map(k => parseKey(k).id);
   const out = new Set();
   themes.forEach((t, i) => {
-    for (let j = Math.max(0, i - SPREAD_WINDOW + 1); j < i; j++) if (themes[j] === t) out.add(i);
+    for (let j = Math.max(0, i - window + 1); j < i; j++) if (themes[j] === t) out.add(i);
   });
   return out;
 }
 
 function presentationOrder(quiz) {
   const p = quiz.presentation;
-  if (p.mode !== 'mixed') return themeOrder(quiz.perTheme);
-  if (!isValidOrder(p.order, quiz.perTheme)) p.order = mixedOrder(quiz.perTheme);
+  if (p.mode !== 'mixed') return themeOrder(quiz);
+  if (!isValidOrder(p.order, quiz)) p.order = mixedOrder(quiz);
   return p.order;
 }
 
-// Madeira é a nº 1; as restantes seguem a ordem de apresentação (2..49).
+// Números: primeiro as especiais numeradas do início, depois as dos temas e por fim
+// as especiais numeradas do fim. Devolve chaves de temas e ids de especiais.
 function numberMap(quiz) {
   const map = new Map();
-  presentationOrder(quiz).forEach((key, i) => map.set(key, i + 2));
+  let n = 1;
+  specialsAt(quiz, 'start').forEach(sp => { if (sp.numbered) map.set(sp.id, n++); });
+  presentationOrder(quiz).forEach(key => map.set(key, n++));
+  specialsAt(quiz, 'end').forEach(sp => { if (sp.numbered) map.set(sp.id, n++); });
   return map;
 }
 
+function specialNumber(quiz, sp) { return numberMap(quiz).get(sp.id) || null; }
+
 function rounds(quiz) {
-  const order = presentationOrder(quiz);
-  const item = key => {
-    const { t, q } = parseKey(key);
-    return { key, t, n: 0, q: quiz.themes[t].questions[q], themeName: quiz.themes[t].name, color: THEMES[t].color };
-  };
-  const items = order.map(item);
-  items.forEach((it, i) => { it.n = i + 2; });
+  const numbers = numberMap(quiz);
+  const items = presentationOrder(quiz).map(key => {
+    const { id, q } = parseKey(key);
+    const t = themeIndex(quiz, id);
+    const theme = quiz.themes[t];
+    return { key, t, n: numbers.get(key), q: theme.questions[q], themeName: theme.name, color: theme.color };
+  });
   if (quiz.presentation.mode !== 'mixed') {
-    return THEMES.map((th, t) => ({
-      title: `Ronda ${t + 1}`, subtitle: quiz.themes[t].name, color: th.color,
+    return quiz.themes.map((theme, t) => ({
+      title: `Ronda ${t + 1}`, subtitle: theme.name, color: theme.color,
       items: items.filter(it => it.t === t),
     }));
   }
-  const size = quiz.presentation.roundSize;
+  // Rondas o mais iguais possível: as primeiras ficam com mais uma, se não der certo.
+  const count = Math.min(items.length, quiz.presentation.rounds);
+  const base = Math.floor(items.length / count);
+  const extra = items.length % count;
   const out = [];
-  for (let i = 0; i < items.length; i += size) {
-    out.push({ title: `Ronda ${out.length + 1}`, subtitle: `Perguntas ${items[i].n}–${items[Math.min(i + size, items.length) - 1].n}`, color: MADEIRA.color, items: items.slice(i, i + size) });
+  let i = 0;
+  for (let r = 0; r < count; r++) {
+    const size = base + (r < extra ? 1 : 0);
+    const slice = items.slice(i, i + size);
+    i += size;
+    out.push({ title: `Ronda ${r + 1}`, subtitle: `Perguntas ${slice[0].n}–${slice[slice.length - 1].n}`, color: MADEIRA.color, items: slice });
   }
   return out;
 }

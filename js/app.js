@@ -5,7 +5,7 @@
 // ---------------------------------------------------------------------------
 
 let quiz = newQuiz();
-let current = null; // slot aberto no editor: {kind:'approx'} | {kind:'madeira'} | {kind:'guilhotina'} | {kind:'theme', t, q}
+let current = null; // slot aberto no editor: {kind:'special', id} | {kind:'theme', t, q}
 let numbers = new Map();
 let saveTimer = null;
 
@@ -22,6 +22,8 @@ async function init() {
       if (legacy) {
         quiz = normalizeQuiz(JSON.parse(legacy)).quiz;
         save();
+      } else {
+        quiz = quizFromDefaults();
       }
     }
   } catch (e) {
@@ -54,37 +56,48 @@ function setSaveState(text) { $('#save-state').textContent = text; }
 // Slots
 // ---------------------------------------------------------------------------
 
+function specialById(id) { return quiz.specials.find(s => s.id === id); }
+
 function getSlot(ref) {
-  if (ref.kind === 'approx') return quiz.approximation;
-  if (ref.kind === 'madeira') return quiz.madeira;
-  if (ref.kind === 'guilhotina') return quiz.guilhotina;
+  if (ref.kind === 'special') return specialById(ref.id).q;
   return quiz.themes[ref.t].questions[ref.q];
 }
 
 function themeOfRef(ref) {
-  if (ref.kind === 'approx') return APPROX;
-  if (ref.kind === 'madeira') return MADEIRA;
-  if (ref.kind === 'guilhotina') return GUILHOTINA;
-  return { ...THEMES[ref.t], name: quiz.themes[ref.t].name };
+  if (ref.kind === 'special') {
+    const sp = specialById(ref.id);
+    return { id: specialBankId(sp), name: sp.name, color: sp.color };
+  }
+  return quiz.themes[ref.t];
 }
 
+// Ordem de leitura: especiais do início, temas e especiais do fim.
 function allRefs() {
-  const refs = [{ kind: 'approx' }, { kind: 'madeira' }];
+  const refs = specialsAt(quiz, 'start').map(s => ({ kind: 'special', id: s.id }));
   quiz.themes.forEach((_, t) => { for (let q = 0; q < quiz.perTheme; q++) refs.push({ kind: 'theme', t, q }); });
-  refs.push({ kind: 'guilhotina' });
-  return refs;
+  return refs.concat(specialsAt(quiz, 'end').map(s => ({ kind: 'special', id: s.id })));
 }
 
-// Tipo de slot para a normalização ('madeira' é uma pergunta normal).
-function slotKind(ref) { return ref.kind === 'approx' || ref.kind === 'guilhotina' ? ref.kind : 'theme'; }
+// Tipo de slot para a normalização: as especiais locais e extra são perguntas normais.
+function slotKind(ref) {
+  if (ref.kind !== 'special') return 'theme';
+  const k = specialById(ref.id).kind;
+  return k === 'question' ? 'theme' : k;
+}
 
-function sameRef(a, b) { return a.kind === b.kind && a.t === b.t && a.q === b.q; }
+function sameRef(a, b) { return a.kind === b.kind && a.t === b.t && a.q === b.q && a.id === b.id; }
+
+function specialTitle(sp) {
+  const n = numbers.get(sp.id);
+  if (n) return `Pergunta ${n} · ${sp.name}`;
+  if (sp.kind === 'approx' && sp.reveal) return `${sp.name} · lida no ${sp.position === 'start' ? 'início' : 'fim'}, desempata no fim`;
+  return `${sp.name} · ${sp.position === 'start' ? 'no início' : 'no fim'}, sem número`;
+}
 
 function refLabel(ref) {
-  if (ref.kind === 'approx') return 'Pergunta de aproximação (lida no início, desempata no fim)';
-  if (ref.kind === 'madeira') return 'Pergunta 1 · Madeira';
-  if (ref.kind === 'guilhotina') return `Pergunta ${guilhotinaNumber(quiz)} · Guilhotina`;
-  return `Pergunta ${numbers.get(slotKey(ref.t, ref.q))} · ${quiz.themes[ref.t].name} (${ref.q + 1}/${quiz.perTheme})`;
+  if (ref.kind === 'special') return specialTitle(specialById(ref.id));
+  const theme = quiz.themes[ref.t];
+  return `Pergunta ${numbers.get(slotKey(theme.id, ref.q))} · ${theme.name} (${ref.q + 1}/${quiz.perTheme})`;
 }
 
 function baseFilename() { return `${slugify(quiz.meta.title)}-${quiz.meta.date || todayISO()}`; }
@@ -105,7 +118,6 @@ function render() {
 }
 
 function renderMeta() {
-  $('#quiz-size').value = String(THEMES.length * quiz.perTheme);
   if (document.activeElement !== $('#meta-title')) $('#meta-title').value = quiz.meta.title;
   if (document.activeElement !== $('#meta-date')) $('#meta-date').value = quiz.meta.date;
   if (document.activeElement !== $('#meta-venue')) $('#meta-venue').value = quiz.meta.venue;
@@ -132,23 +144,44 @@ function badges(q) {
     q.type === 'match' ? el('span', { class: 'badge', title: TYPES.match }, 'A–1') : null,
     q.media ? el('span', { class: 'badge', title: mediaLabel(q.media) }, MEDIA_ICONS[q.media.kind]) : null,
     q.points === 2 ? el('span', { class: 'badge points' }, '2 pts') : null,
-    q.porto ? el('span', { class: 'badge porto' }, 'Porto') : null,
+    ...(q.tags || []).map(t => el('span', { class: 'badge tag' }, t)),
     used ? el('span', { class: 'badge used', title: 'Já usada (ou parecida com uma usada) num quiz anterior' }, '↺') : null,
     q.verified ? el('span', { class: 'badge verified', title: 'Resposta verificada' }, '✓') : null,
   ];
 }
 
+const SPECIAL_HINTS = {
+  approx: 'Pergunta cuja resposta é um número…',
+  guilhotina: 'Quatro palavras e a palavra que as liga…',
+};
+
+// As especiais usam as mesmas colunas e o mesmo tamanho das células da grelha.
+function gridColumns(el) {
+  el.style.gridTemplateColumns = `repeat(${quiz.themes.length}, minmax(128px, 1fr))`;
+  el.style.minWidth = `${Math.min(1080, quiz.themes.length * 136)}px`;
+}
+
 function renderSpecials() {
-  const fill = (node, ref, title, emptyText) => {
-    const q = getSlot(ref);
-    node.style.setProperty('--c', themeOfRef(ref).color);
-    node.replaceChildren(el('h4', {}, title, ' ', badges(q)), ...preview(q, emptyText));
-    node.onclick = () => openEditor(ref);
-    node.onkeydown = e => { if (e.key === 'Enter') openEditor(ref); };
-  };
-  fill($('#card-approx'), { kind: 'approx' }, 'Aproximação · lida no início', 'Pergunta cuja resposta é um número…');
-  fill($('#card-madeira'), { kind: 'madeira' }, 'Pergunta 1 · Madeira', 'Pergunta sobre a Madeira…');
-  fill($('#card-guilhotina'), { kind: 'guilhotina' }, `Pergunta ${guilhotinaNumber(quiz)} · Guilhotina`, 'Quatro palavras e a palavra que as liga…');
+  const box = $('#specials');
+  $('#specials-wrap').hidden = !enabledSpecials(quiz).length;
+  gridColumns(box);
+  box.replaceChildren(...allRefs().filter(r => r.kind === 'special').map(ref => {
+    const sp = specialById(ref.id);
+    const n = numbers.get(sp.id);
+    const state = isFilled(sp.q) ? 'filled' : isStarted(sp.q) ? 'partial' : 'empty';
+    return el('div', {
+      class: `cell special ${state}`, tabindex: '0', style: `--c:${sp.color}`, title: specialTitle(sp),
+      onclick: () => openEditor(ref),
+      onkeydown: e => { if (e.key === 'Enter') openEditor(ref); },
+    },
+      el('div', { class: 'num' },
+        el('span', { class: 'n' }, n ? String(n) : (sp.kind === 'approx' ? '≈' : '★')),
+        el('span', { class: 'sp-name' }, sp.name),
+        badges(sp.q),
+      ),
+      preview(sp.q, SPECIAL_HINTS[sp.kind] || 'vazia'),
+    );
+  }));
 }
 
 function renderGrid() {
@@ -156,28 +189,31 @@ function renderGrid() {
   quiz.themes.forEach((theme, t) => {
     const filled = theme.questions.filter(isFilled).length;
     nodes.push(el('div', {
-      class: 'theme-head', style: `--c:${THEMES[t].color}`, title: 'Duplo-clique para renomear',
+      class: 'theme-head', style: `--c:${theme.color}`, title: 'Duplo-clique para renomear',
       ondblclick: () => renameTheme(t),
     }, theme.name, el('small', {}, `${filled}/${quiz.perTheme}`)));
   });
   // A linha q contém a pergunta q de cada tema.
   for (let q = 0; q < quiz.perTheme; q++) quiz.themes.forEach((_, t) => nodes.push(cellNode(t, q)));
-  $('#grid').replaceChildren(...nodes);
+  const grid = $('#grid');
+  gridColumns(grid);
+  grid.replaceChildren(...nodes);
 }
 
 let gridDrag = null; // {t, q} da célula a ser arrastada
 
 function cellNode(t, q) {
-  const question = quiz.themes[t].questions[q];
+  const theme = quiz.themes[t];
+  const question = theme.questions[q];
   const state = isFilled(question) ? 'filled' : isStarted(question) ? 'partial' : 'empty';
   const ref = { kind: 'theme', t, q };
   const node = el('div', {
-    class: `cell ${state}`, style: `--c:${THEMES[t].color}`, tabindex: '0', draggable: 'true',
+    class: `cell ${state}`, style: `--c:${theme.color}`, tabindex: '0', draggable: 'true',
     'data-t': String(t),
     onclick: () => openEditor(ref),
     onkeydown: e => { if (e.key === 'Enter') openEditor(ref); },
   },
-    el('div', { class: 'num' }, el('span', { class: 'n' }, `${numbers.get(slotKey(t, q))}`), badges(question)),
+    el('div', { class: 'num' }, el('span', { class: 'n' }, `${numbers.get(slotKey(theme.id, q))}`), badges(question)),
     preview(question, 'vazia'),
   );
   // Arrastar troca a posição dentro do mesmo tema: a pergunta nunca muda de tema.
@@ -221,50 +257,63 @@ function swap(t, q1, q2) {
 
 function validate() {
   const warnings = [];
+  const checks = quiz.config.checks;
+  const specials = enabledSpecials(quiz);
   const themeQs = quiz.themes.flatMap(t => t.questions);
-  const all = [quiz.approximation, quiz.madeira, ...themeQs, quiz.guilhotina];
+  const all = [...specials.map(s => s.q), ...themeQs];
   const filled = all.filter(isFilled).length;
-  const points = [quiz.madeira, ...themeQs, quiz.guilhotina].filter(isFilled).reduce((s, q) => s + q.points, 0);
+  const scored = [...specials.filter(s => s.kind !== 'approx').map(s => s.q), ...themeQs];
+  const points = scored.filter(isFilled).reduce((s, q) => s + q.points, 0);
 
-  const ap = quiz.approximation;
-  if (!isFilled(ap)) warnings.push('Falta a pergunta de aproximação');
-  else if (Number.isNaN(Number(str(ap.answer).replace(',', '.').replace(/\s/g, '')))) warnings.push('A resposta da aproximação não é um número');
-
-  if (!isFilled(quiz.madeira)) warnings.push('Falta a pergunta sobre a Madeira');
-  if (!isFilled(quiz.guilhotina)) warnings.push(`Falta a guilhotina (${GUILHOTINA_WORDS} palavras e a resposta)`);
-
-  quiz.themes.forEach(theme => {
-    const missing = theme.questions.filter(q => !isFilled(q)).length;
-    if (missing) warnings.push(`${theme.name}: faltam ${missing}`);
+  if (checks.missing) {
+    specials.forEach(sp => { if (!isFilled(sp.q)) warnings.push(`Falta a pergunta: ${sp.name}`); });
+    quiz.themes.forEach(theme => {
+      const missing = theme.questions.filter(q => !isFilled(q)).length;
+      if (missing) warnings.push(`${theme.name}: faltam ${missing}`);
+    });
+  }
+  specials.filter(s => s.kind === 'approx' && isFilled(s.q)).forEach(sp => {
+    if (Number.isNaN(Number(str(sp.q.answer).replace(',', '.').replace(/\s/g, '')))) warnings.push(`A resposta de “${sp.name}” não é um número`);
   });
 
   const noCorrect = all.filter(q => q.type === 'choice' && q.options.length && !q.options[q.correct]).length;
   if (noCorrect) warnings.push(`${noCorrect} de escolha múltipla sem opção correta`);
 
-  const geo = quiz.themes.find(t => t.id === 'geografia');
-  if (!geo.questions.some(q => q.porto)) {
-    const hint = geo.questions.some(q => /porto/i.test(q.question)) ? ' (há uma que menciona “Porto” — marca-a)' : '';
-    warnings.push('Locais e Geografia: nenhuma pergunta marcada como sobre o Porto' + hint);
-  }
+  // Regras: pelo menos N perguntas de um tema com uma etiqueta.
+  quiz.config.rules.forEach(rule => {
+    const theme = quiz.themes.find(t => t.id === rule.theme);
+    if (!theme) return;
+    const have = theme.questions.filter(q => hasTag(q, rule.tag)).length;
+    if (have >= rule.min) return;
+    const mentions = theme.questions.some(q => !hasTag(q, rule.tag) && normText(q.question).includes(normText(rule.tag)));
+    const hint = mentions ? ` (há perguntas que mencionam “${rule.tag}” — marca-as)` : '';
+    warnings.push(`${theme.name}: ${have} de ${rule.min} com a etiqueta “${rule.tag}”${hint}`);
+  });
 
-  if (quiz.presentation.mode === 'mixed') {
-    const clashes = orderConflicts(presentationOrder(quiz)).size;
+  if (checks.order && quiz.presentation.mode === 'mixed') {
+    const clashes = orderConflicts(quiz, presentationOrder(quiz)).size;
     if (clashes) warnings.push(`Ordem: ${clashText(clashes)}`);
   }
 
-  const unverified = all.filter(q => isFilled(q) && !q.verified).length;
-  if (unverified) warnings.push(`${unverified} respostas por verificar`);
+  if (checks.unverified) {
+    const unverified = all.filter(q => isFilled(q) && !q.verified).length;
+    if (unverified) warnings.push(`${unverified} respostas por verificar`);
+  }
 
-  const reused = all.filter(q => questionText(q).trim() && priorUses(q).length).length;
-  if (reused) warnings.push(`${reused} já usadas em quizzes anteriores (↺)`);
+  if (checks.reused) {
+    const reused = all.filter(q => questionText(q).trim() && priorUses(q).length).length;
+    if (reused) warnings.push(`${reused} já usadas em quizzes anteriores (↺)`);
+  }
 
-  const seen = new Map();
-  all.forEach(q => {
-    const key = normText(questionText(q));
-    if (key) seen.set(key, (seen.get(key) || 0) + 1);
-  });
-  const dups = [...seen.values()].filter(n => n > 1).length;
-  if (dups) warnings.push(`${dups} perguntas repetidas neste quiz`);
+  if (checks.duplicates) {
+    const seen = new Map();
+    all.forEach(q => {
+      const key = normText(questionText(q));
+      if (key) seen.set(key, (seen.get(key) || 0) + 1);
+    });
+    const dups = [...seen.values()].filter(n => n > 1).length;
+    if (dups) warnings.push(`${dups} perguntas repetidas neste quiz`);
+  }
 
   return { warnings, filled, total: all.length, points };
 }
@@ -298,22 +347,42 @@ const F = {
   question: $('#ed-question'), answer: $('#ed-answer'), unit: $('#ed-unit'),
   options: $('#ed-options'), correct: $('#ed-correct'),
   matchLeft: $('#ed-match-left'), matchRight: $('#ed-match-right'),
-  notes: $('#ed-notes'), source: $('#ed-source'), verified: $('#ed-verified'), porto: $('#ed-porto'),
+  notes: $('#ed-notes'), source: $('#ed-source'), verified: $('#ed-verified'), tags: $('#ed-tags'),
 };
+
+// Etiquetas sugeridas: as das regras que se aplicam ao tema desta pergunta.
+function ruleTagsFor(ref) {
+  if (ref.kind !== 'theme') return [];
+  const id = quiz.themes[ref.t].id;
+  return [...new Set(quiz.config.rules.filter(r => r.theme === id).map(r => r.tag))];
+}
+
+function renderTagChips(ref, q) {
+  $('#ed-tag-chips').replaceChildren(...ruleTagsFor(ref).map(tag => el('label', { class: 'check tag-chip' },
+    el('input', {
+      type: 'checkbox', ...(hasTag(q, tag) ? { checked: '' } : {}),
+      onchange: e => {
+        const rest = (q.tags || []).filter(t => normText(t) !== normText(tag));
+        q.tags = e.target.checked ? [...rest, tag] : rest;
+        F.tags.value = q.tags.join(', ');
+        save();
+        render();
+      },
+    }), tag)));
+}
 
 function openEditor(ref) {
   current = ref;
   const q = getSlot(ref);
-  const isApprox = ref.kind === 'approx';
-  const isGuil = ref.kind === 'guilhotina';
-  const isGeo = ref.kind === 'theme' && quiz.themes[ref.t].id === 'geografia';
+  const kind = slotKind(ref);
+  const isApprox = kind === 'approx';
+  const isGuil = kind === 'guilhotina';
 
   editor.style.setProperty('--c', themeOfRef(ref).color);
   $('#ed-label').textContent = refLabel(ref);
   $('#ed-kind-row').hidden = isApprox;
   $('#ed-type-wrap').hidden = isGuil;
   $('#ed-unit-wrap').hidden = !isApprox;
-  $('#ed-porto-wrap').hidden = !isGeo;
   $('#ed-move').style.visibility = ref.kind === 'theme' ? 'visible' : 'hidden';
   $('#ed-up').disabled = ref.kind !== 'theme' || ref.q === 0;
   $('#ed-down').disabled = ref.kind !== 'theme' || ref.q === quiz.perTheme - 1;
@@ -336,7 +405,8 @@ function openEditor(ref) {
   F.notes.value = q.notes;
   F.source.value = q.source;
   F.verified.checked = !!q.verified;
-  F.porto.checked = !!q.porto;
+  F.tags.value = (q.tags || []).join(', ');
+  renderTagChips(ref, q);
   $('#ed-media-url').value = q.media && q.media.url ? q.media.url : '';
 
   syncEditorSections(q);
@@ -347,7 +417,8 @@ function openEditor(ref) {
 
 // Mostra/esconde secções e atualiza as partes derivadas (opção correta, pré-visualizações).
 function syncEditorSections(q) {
-  const type = current.kind === 'approx' ? 'open' : q.type;
+  const kind = slotKind(current);
+  const type = kind === 'approx' ? 'open' : q.type;
   $('#sec-guilhotina').hidden = type !== 'guilhotina';
   $('#sec-open').hidden = type !== 'open' && type !== 'guilhotina';
   $('#sec-choice').hidden = type !== 'choice';
@@ -375,14 +446,16 @@ function syncEditorSections(q) {
 function readEditor() {
   if (!current) return;
   const q = getSlot(current);
+  const kind = slotKind(current);
   q.question = F.question.value;
   q.answer = F.answer.value;
   q.notes = F.notes.value;
   q.source = F.source.value;
   q.verified = F.verified.checked;
-  if (current.kind === 'approx') {
+  q.tags = [...new Set(F.tags.value.split(',').map(t => t.trim()).filter(Boolean))];
+  if (kind === 'approx') {
     q.unit = F.unit.value;
-  } else if (current.kind === 'guilhotina') {
+  } else if (kind === 'guilhotina') {
     q.points = Number(F.points.value);
     q.difficulty = F.difficulty.value;
     q.words = [...document.querySelectorAll('.ed-word')].map(i => i.value);
@@ -390,7 +463,6 @@ function readEditor() {
     q.type = F.type.value;
     q.points = Number(F.points.value);
     q.difficulty = F.difficulty.value;
-    q.porto = F.porto.checked;
     q.options = F.options.value.split('\n').map(s => s.trim()).filter(Boolean);
     q.correct = Number(F.correct.value);
     const left = F.matchLeft.value.split('\n');
@@ -403,6 +475,7 @@ function readEditor() {
     if (pairs.length !== q.pairs.length) q.matchOrder = shuffledIndices(pairs.length);
     q.pairs = pairs;
   }
+  renderTagChips(current, q);
   syncEditorSections(q);
   save();
   render();
@@ -536,9 +609,7 @@ function hasContent() { return allRefs().some(r => isStarted(getSlot(r))); }
 $('#btn-new').onclick = () => {
   if (hasContent() && !confirm('Começar um quiz novo? O atual será substituído (podes desfazer com Ctrl+Z).')) return;
   pushQuizUndo('novo quiz');
-  const { perTheme, presentation: { template } } = quiz;
-  quiz = newQuiz(perTheme);
-  quiz.presentation.template = template;
+  quiz = quizFromDefaults();
   save();
   render();
 };

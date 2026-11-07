@@ -2,26 +2,37 @@
 
 Aplicação web para preparar quizzes de bar: escrever ou sortear as perguntas, organizá-las por tema, definir a ordem e exportar a apresentação em PowerPoint, com 11 templates à escolha.
 
-Nasceu para as quiz nights da Casa da Madeira. Por isso, a interface e a base de perguntas estão em português de Portugal, e a estrutura do quiz inclui sempre uma pergunta sobre a Madeira.
+Nasceu para as quiz nights da Casa da Madeira. Por isso, a interface e a base de perguntas estão em português de Portugal, e a configuração de origem inclui uma pergunta sobre a Madeira.
 
 A aplicação é estática e não tem servidor nem contas de utilizador. Corre no browser, e os quizzes e o banco de perguntas ficam guardados nesse browser.
 
 ## Estrutura de um quiz
 
+A configuração de origem é esta, e pode ser mudada no separador **Configurar**:
+
 | Pergunta | Descrição |
 |---|---|
 | Aproximação | Lida no início. A resposta é um número e só é revelada no fim, para desempatar. |
-| 1 | Pergunta sobre a Madeira. |
-| 2 em diante | Perguntas dos 8 temas, de 16 a 96 no total (2 a 12 por tema). |
-| Última | Guilhotina: quatro palavras e a palavra que as liga. Com 48 perguntas temáticas, é a pergunta 50. |
+| 1 | Pergunta local, sobre a Madeira. |
+| 2 a 49 | 6 perguntas de cada um dos 8 temas. |
+| 50 | Guilhotina: quatro palavras e a palavra que as liga. |
 
 Os 8 temas são: História, Ciências Exatas, Desporto e Jogos, Música, Cinema e TV, Arte e Design, Literatura, Filosofia e Ciências Sociais, Atualidade, e Locais e Geografia.
+
+### Configurar
+
+- **Temas:** ligar e desligar os 7 temas que têm perguntas na base, criar temas personalizados (Atualidade é um deles) e mudar nomes, cores e ordem. Até 12 temas. Um tema desligado guarda as perguntas que tinha.
+- **Perguntas especiais:** aproximação, pergunta local, Guilhotina e até 4 perguntas extra. Cada uma pode ir para o início ou para o fim e ser numerada ou lida fora da contagem. A pergunta local muda de nome conforme o sítio onde o quiz é apresentado, e cada nome tem a sua categoria no banco.
+- **Tamanho e rondas:** perguntas por tema e número de rondas na ordem misturada, até 100 perguntas no total. A regra de repetição vai de «nunca o mesmo tema seguido» até «sem repetir em N seguidas», sendo N o número de temas.
+- **Verificações:** ligar e desligar os avisos, e criar regras do tipo «pelo menos N perguntas do tema T com a etiqueta X», como a de haver uma pergunta sobre o Porto. O preenchimento automático respeita as regras.
+- **Predefinição:** guardar a configuração atual para os quizzes novos.
 
 ## Funcionalidades
 
 **Edição**
 
-- Grelha de temas por perguntas, com avisos do que falta: perguntas vazias, respostas por verificar, nenhuma pergunta sobre o Porto e repetições.
+- Grelha de temas por perguntas, com avisos do que falta: perguntas vazias, respostas por verificar, regras de etiquetas por cumprir e repetições.
+- Etiquetas em cada pergunta (por exemplo, «Porto»), usadas pelas regras de verificação.
 - Tipos de pergunta: resposta aberta, escolha múltipla e correspondência (A-2, B-1…).
 - Imagem, áudio ou vídeo em cada pergunta, a partir de um ficheiro ou de um URL (incluindo YouTube).
 - Perguntas de 1 ou 2 pontos, dificuldade, notas e fonte.
@@ -36,8 +47,8 @@ Os 8 temas são: História, Ciências Exatas, Desporto e Jogos, Música, Cinema 
 
 **Ordem das perguntas**
 
-- Por tema ou misturada, com o número de perguntas por ronda à escolha.
-- Baralhar sem repetir o tema em 5 perguntas seguidas.
+- Por tema (uma ronda por tema) ou misturada, com o número de rondas à escolha.
+- Baralhar segundo a regra de repetição de temas configurada.
 - Vista «Ordem do quiz», onde se arrastam as perguntas para outra posição.
 
 **Exportação**
@@ -123,6 +134,7 @@ js/
   db.js               Armazenamento em IndexedDB
   bank.js             Banco de perguntas e pergunta aleatória
   arrange.js          Vistas, baralhar, preencher e desfazer
+  config.js           Separador «Configurar» e predefinição dos quizzes novos
   templates.js        Templates e geração dos slides
   export.js           Exportações em PowerPoint e Markdown
   app.js              Grelha, editor e arranque

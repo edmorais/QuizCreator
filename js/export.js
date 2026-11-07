@@ -9,7 +9,6 @@ const exportDialog = $('#export-dialog');
 function openExport() {
   const p = quiz.presentation;
   $('#ex-mode').value = p.mode;
-  $('#ex-size').value = String(p.roundSize);
   $('#ex-answers').value = p.answers;
   $('#ex-notes').checked = p.notes;
   renderTemplatePicker();
@@ -33,26 +32,25 @@ function renderTemplatePicker() {
   $('#ex-template-info').textContent = `${T.blurb}. Tipos de letra: ${[...new Set(fonts.split(' · '))].join(' · ')}.`;
 }
 
+function specialChip(qz, sp) {
+  const it = specialItem(qz, sp);
+  return el('span', { class: 'order-chip' + (isFilled(sp.q) ? '' : ' missing'), style: `--c:${sp.color}`, title: sp.name }, it.n ? String(it.n) : (sp.kind === 'approx' ? '≈' : '★'));
+}
+
 function renderOrderPreview() {
   const mixed = quiz.presentation.mode === 'mixed';
   $('#ex-size-wrap').hidden = !mixed;
   $('#ex-shuffle').hidden = !mixed;
-  const madeira = el('div', { class: 'order-round' },
-    el('span', { class: 'order-label' }, 'Início'),
-    el('span', { class: 'order-chip', style: `--c:${APPROX.color}`, title: 'Aproximação' }, '≈'),
-    el('span', { class: 'order-chip', style: `--c:${MADEIRA.color}`, title: 'Madeira' }, '1'),
-  );
-  const last = el('div', { class: 'order-round' },
-    el('span', { class: 'order-label' }, 'Fim'),
-    el('span', { class: 'order-chip' + (isFilled(quiz.guilhotina) ? '' : ' missing'), style: `--c:${GUILHOTINA.color}`, title: 'Guilhotina' }, String(guilhotinaNumber(quiz))),
-  );
-  $('#ex-order').replaceChildren(madeira, ...rounds(quiz).map(r => el('div', { class: 'order-round' },
-    el('span', { class: 'order-label' }, r.title),
-    r.items.map(it => el('span', {
+  renderRoundsSelect($('#ex-size'));
+  const row = (label, chips) => chips.length ? el('div', { class: 'order-round' }, el('span', { class: 'order-label' }, label), chips) : null;
+  $('#ex-order').replaceChildren(...[
+    row('Início', specialsAt(quiz, 'start').map(sp => specialChip(quiz, sp))),
+    ...rounds(quiz).map(r => row(r.title, r.items.map(it => el('span', {
       class: 'order-chip' + (isFilled(it.q) ? '' : ' missing'), style: `--c:${it.color}`,
       title: `${it.n} · ${it.themeName}: ${it.q.question || '(vazia)'}`,
-    }, String(it.n))),
-  )), last);
+    }, String(it.n))))),
+    row('Fim', specialsAt(quiz, 'end').map(sp => specialChip(quiz, sp))),
+  ].filter(Boolean));
 }
 
 function updatePresentation(changes) {
@@ -65,10 +63,10 @@ function updatePresentation(changes) {
 
 $('#btn-export').onclick = openExport;
 $('#ex-mode').addEventListener('change', e => updatePresentation({ mode: e.target.value }));
-$('#ex-size').addEventListener('change', e => updatePresentation({ roundSize: Number(e.target.value) }));
+$('#ex-size').addEventListener('change', e => updatePresentation({ rounds: Number(e.target.value) }));
 $('#ex-answers').addEventListener('change', e => updatePresentation({ answers: e.target.value }));
 $('#ex-notes').addEventListener('change', e => updatePresentation({ notes: e.target.checked }));
-$('#ex-shuffle').onclick = () => updatePresentation({ order: mixedOrder(quiz.perTheme) });
+$('#ex-shuffle').onclick = () => updatePresentation({ order: mixedOrder(quiz) });
 
 exportDialog.addEventListener('close', async () => {
   const kind = exportDialog.returnValue;
@@ -113,7 +111,32 @@ function promptOf(q) {
   return q.question.trim();
 }
 
-function guilhotinaItem(qz) { return { n: guilhotinaNumber(qz), q: qz.guilhotina, color: GUILHOTINA.color }; }
+// Uma pergunta especial pronta a apresentar: número (se for numerada) e se é a de desempate.
+function specialItem(qz, sp) {
+  const n = specialNumber(qz, sp);
+  return { sp, q: sp.q, n, color: sp.color, tiebreak: sp.kind === 'approx' && sp.reveal };
+}
+
+// Abertura de cada pergunta especial.
+function specialSection(it) {
+  const { sp, n } = it;
+  const extra = it.tiebreak ? 'A resposta é um número e serve para desempatar no fim'
+    : sp.kind === 'guilhotina' ? 'Que palavra liga as quatro?' : '';
+  if (n) return { kicker: `Pergunta ${n}`, title: sp.name, extra };
+  if (it.tiebreak) return { kicker: sp.position === 'start' ? 'Para começar' : 'Para acabar', title: sp.name, extra };
+  return { kicker: 'Pergunta especial', title: sp.name, extra };
+}
+
+// Sequência da noite: especiais do início, rondas, especiais do fim.
+function readingPlan(qz) {
+  return {
+    start: specialsAt(qz, 'start').map(sp => specialItem(qz, sp)),
+    rounds: rounds(qz),
+    end: specialsAt(qz, 'end').map(sp => specialItem(qz, sp)),
+  };
+}
+
+const answerItem = it => ({ n: it.n || '★', q: it.q, color: it.color });
 
 // ---------------------------------------------------------------------------
 // Markdown: guião do apresentador
@@ -139,14 +162,17 @@ function toScriptMarkdown(qz) {
     if (qz.presentation.notes && q.source.trim()) lines.push(`<small>Fonte: ${q.source.trim()}</small>`);
     return lines.join('  \n');
   };
+  const special = it => {
+    out.push(`## ${it.sp.name}${it.tiebreak ? ' (desempate)' : ''}`, item(it.n ? String(it.n) : it.sp.name, it.q));
+  };
 
-  out.push('## Início · aproximação (desempate)', item('Aproximação', qz.approximation));
-  out.push('## Madeira', item('1', qz.madeira));
-  rounds(qz).forEach(r => {
+  const plan = readingPlan(qz);
+  plan.start.forEach(special);
+  plan.rounds.forEach(r => {
     out.push(`## ${r.title} · ${r.subtitle}`);
     r.items.forEach(it => out.push(item(`${it.n}${qz.presentation.mode === 'mixed' ? ` (${it.themeName})` : ''}`, it.q)));
   });
-  out.push('## Guilhotina', item(String(guilhotinaNumber(qz)), qz.guilhotina));
+  plan.end.forEach(special);
   return out.join('\n\n') + '\n';
 }
 
@@ -177,37 +203,38 @@ function toSlidesMarkdown(qz) {
   };
   const answers = (title, items) => `## ${title}\n\n` + items.map(it => `${it.n}. **${answerOf(it.q) || '?'}**`).join('\n');
   const question = (label, theme, q) => `## ${label} · ${theme}${q.points === 2 ? ' · 2 pontos' : ''}\n\n${body(q)}${note(q)}`;
+  const special = it => {
+    const s = specialSection(it);
+    slides.push(lead(s.kicker, s.title));
+    slides.push(question(it.n || it.sp.name, it.n ? it.sp.name : (it.tiebreak ? 'desempate' : 'especial'), it.q));
+    if (opts.answers === 'round' && !it.tiebreak) slides.push(answers(`Resposta · ${it.sp.name}`, [answerItem(it)]));
+  };
 
   const header = `---\nmarp: true\npaginate: true\ntitle: ${JSON.stringify(qz.meta.title)}\n---\n\n`;
   const sub = headerSubtitle(qz);
   slides.push(`# ${qz.meta.title}${sub ? '\n\n' + sub : ''}`);
 
-  slides.push(lead('Para começar', 'Pergunta de aproximação'));
-  slides.push(question('Aproximação', 'desempate', qz.approximation));
-  slides.push(lead('Pergunta 1', 'Madeira'));
-  slides.push(question('1', 'Madeira', qz.madeira));
-  const madeiraItem = { n: 1, q: qz.madeira };
-  if (opts.answers === 'round') slides.push(answers('Resposta · Madeira', [madeiraItem]));
-
-  const rs = rounds(qz);
-  rs.forEach(r => {
+  const plan = readingPlan(qz);
+  plan.start.forEach(special);
+  plan.rounds.forEach(r => {
     slides.push(lead(r.title, r.subtitle));
     r.items.forEach(it => slides.push(question(it.n, it.themeName, it.q)));
     if (opts.answers === 'round') slides.push(answers(`Respostas · ${r.title}`, r.items));
   });
-  const guil = guilhotinaItem(qz);
-  slides.push(lead(`Pergunta ${guil.n}`, 'Guilhotina'));
-  slides.push(question(guil.n, 'Guilhotina', qz.guilhotina));
-  if (opts.answers === 'round') slides.push(answers('Resposta · Guilhotina', [guil]));
+  plan.end.forEach(special);
+
+  const specials = [...plan.start, ...plan.end];
   if (opts.answers === 'end') {
     slides.push(lead('Respostas', ''));
-    slides.push(answers('Madeira', [madeiraItem]));
-    rs.forEach(r => slides.push(answers(`${r.title} · ${r.subtitle}`, r.items)));
-    slides.push(answers('Guilhotina', [guil]));
+    plan.start.filter(it => !it.tiebreak).forEach(it => slides.push(answers(it.sp.name, [answerItem(it)])));
+    plan.rounds.forEach(r => slides.push(answers(`${r.title} · ${r.subtitle}`, r.items)));
+    plan.end.filter(it => !it.tiebreak).forEach(it => slides.push(answers(it.sp.name, [answerItem(it)])));
   }
   if (opts.answers !== 'none') {
-    slides.push(lead('Desempate', 'Resposta da aproximação'));
-    slides.push(`# ${answerOf(qz.approximation) || '?'}\n\n${qz.approximation.question}`);
+    specials.filter(it => it.tiebreak).forEach(it => {
+      slides.push(lead('Desempate', `Resposta: ${it.sp.name}`));
+      slides.push(`# ${answerOf(it.q) || '?'}\n\n${it.q.question}`);
+    });
   }
   return header + slides.join('\n\n---\n\n') + '\n';
 }
@@ -295,89 +322,80 @@ function newDeck(qz) {
   return new Deck(TEMPLATES[qz.presentation.template] || TEMPLATES[DEFAULT_TEMPLATE], pptx);
 }
 
+const specialInfo = it => ({ kick: it.sp.name, n: it.n ? String(it.n) : '', color: bright(it.color), q: it.q });
+
+function tiebreakSlides(deck, items, notes) {
+  items.filter(it => it.tiebreak).forEach(it => {
+    deck.section({ kicker: 'Desempate', title: `Resposta: ${it.sp.name}`, color: bright(it.color) });
+    const p = deck.reveal(it.q, `${it.sp.name} · desempate`, bright(it.color));
+    if (notes) p.s.addNotes(noteLines(it.q).join('\n'));
+  });
+}
+
 // Apresentação para corrigir: cada pergunta em dois slides, primeiro a pergunta
-// e depois só a resposta, em destaque. A aproximação fica no fim (desempate).
+// e depois só a resposta, em destaque. As de desempate ficam no fim.
 async function buildAnswersPptx(qz) {
   const deck = newDeck(qz);
   const notes = qz.presentation.notes;
-  const tint = bright;
+  const plan = readingPlan(qz);
   const pair = async info => {
     await deck.question(info, notes);
     deck.answerSlide(info, notes);
   };
+  const special = async it => {
+    if (it.tiebreak) return;
+    deck.section({ ...specialSection(it), color: bright(it.color) });
+    await pair(specialInfo(it));
+  };
 
   deck.cover(qz.meta.title, ['Respostas', headerSubtitle(qz)].filter(Boolean).join(' · '));
-
-  const madeiraColor = tint(MADEIRA.color);
-  deck.section({ kicker: 'Pergunta 1', title: 'Madeira', color: madeiraColor });
-  await pair({ kick: 'Madeira', n: '1', color: madeiraColor, q: qz.madeira });
-
-  for (const [index, r] of rounds(qz).entries()) {
-    deck.section({ kicker: r.title, title: r.subtitle, color: tint(r.color), big: index + 1, stops: r.items.length });
+  for (const it of plan.start) await special(it);
+  for (const [index, r] of plan.rounds.entries()) {
+    deck.section({ kicker: r.title, title: r.subtitle, color: bright(r.color), big: index + 1, stops: r.items.length });
     for (const [i, it] of r.items.entries()) {
-      await pair({ kick: it.themeName, n: String(it.n), color: tint(it.color), q: it.q, stop: { i, total: r.items.length } });
+      await pair({ kick: it.themeName, n: String(it.n), color: bright(it.color), q: it.q, stop: { i, total: r.items.length } });
     }
   }
-
-  const guil = guilhotinaItem(qz);
-  const guilColor = tint(GUILHOTINA.color);
-  deck.section({ kicker: `Pergunta ${guil.n}`, title: 'Guilhotina', color: guilColor });
-  await pair({ kick: 'Guilhotina', n: String(guil.n), color: guilColor, q: qz.guilhotina });
-
-  const approxColor = tint(APPROX.color);
-  deck.section({ kicker: 'Desempate', title: 'Pergunta de aproximação', color: approxColor });
-  await pair({ kick: 'Aproximação', n: '', color: approxColor, q: qz.approximation });
+  for (const it of plan.end) await special(it);
+  for (const it of [...plan.start, ...plan.end].filter(x => x.tiebreak)) {
+    deck.section({ kicker: 'Desempate', title: it.sp.name, color: bright(it.color) });
+    await pair(specialInfo(it));
+  }
   return deck.pptx;
 }
 
 async function buildPptx(qz) {
   const deck = newDeck(qz);
-  const pptx = deck.pptx;
   const opts = qz.presentation;
-  const tint = bright;
+  const plan = readingPlan(qz);
+  const special = async it => {
+    deck.section({ ...specialSection(it), color: bright(it.color) });
+    await deck.question(specialInfo(it), opts.notes);
+    if (opts.answers === 'round' && !it.tiebreak) deck.answers(`Resposta · ${it.sp.name}`, [answerItem(it)], bright(it.color));
+  };
 
   deck.cover(qz.meta.title, headerSubtitle(qz));
+  for (const it of plan.start) await special(it);
 
-  // Aproximação no início; a resposta só aparece no fim (desempate).
-  const approxColor = tint(APPROX.color);
-  deck.section({ kicker: 'Para começar', title: 'Pergunta de aproximação', extra: 'A resposta é um número e serve para desempatar no fim', color: approxColor });
-  await deck.question({ kick: 'Aproximação', n: '', color: approxColor, q: qz.approximation }, opts.notes);
-
-  const madeiraColor = tint(MADEIRA.color);
-  const madeiraItem = { n: 1, q: qz.madeira };
-  deck.section({ kicker: 'Pergunta 1', title: 'Madeira', color: madeiraColor });
-  await deck.question({ kick: 'Madeira', n: '1', color: madeiraColor, q: qz.madeira }, opts.notes);
-  if (opts.answers === 'round') deck.answers('Resposta · Madeira', [madeiraItem], madeiraColor);
-
-  const rs = rounds(qz);
-  for (const [index, r] of rs.entries()) {
-    const color = tint(r.color);
+  for (const [index, r] of plan.rounds.entries()) {
+    const color = bright(r.color);
     deck.section({ kicker: r.title, title: r.subtitle, color, big: index + 1, stops: r.items.length });
     for (const [i, it] of r.items.entries()) {
-      await deck.question({ kick: it.themeName, n: String(it.n), color: tint(it.color), q: it.q, stop: { i, total: r.items.length } }, opts.notes);
+      await deck.question({ kick: it.themeName, n: String(it.n), color: bright(it.color), q: it.q, stop: { i, total: r.items.length } }, opts.notes);
     }
     if (opts.answers === 'round') deck.answers(`Respostas · ${r.title}`, r.items, color);
   }
 
-  const guil = guilhotinaItem(qz);
-  const guilColor = tint(GUILHOTINA.color);
-  deck.section({ kicker: `Pergunta ${guil.n}`, title: 'Guilhotina', extra: 'Que palavra liga as quatro?', color: guilColor });
-  await deck.question({ kick: 'Guilhotina', n: String(guil.n), color: guilColor, q: qz.guilhotina }, opts.notes);
-  if (opts.answers === 'round') deck.answers('Resposta · Guilhotina', [guil], guilColor);
+  for (const it of plan.end) await special(it);
 
   if (opts.answers === 'end') {
-    deck.section({ kicker: 'Fim do jogo', title: 'Respostas', color: madeiraColor });
-    deck.answers('Resposta · Madeira', [madeiraItem], madeiraColor);
-    rs.forEach(r => deck.answers(`Respostas · ${r.title}`, r.items, tint(r.color)));
-    deck.answers('Resposta · Guilhotina', [guil], guilColor);
+    deck.section({ kicker: 'Fim do jogo', title: 'Respostas', color: bright(MADEIRA.color) });
+    plan.start.filter(it => !it.tiebreak).forEach(it => deck.answers(`Resposta · ${it.sp.name}`, [answerItem(it)], bright(it.color)));
+    plan.rounds.forEach(r => deck.answers(`Respostas · ${r.title}`, r.items, bright(r.color)));
+    plan.end.filter(it => !it.tiebreak).forEach(it => deck.answers(`Resposta · ${it.sp.name}`, [answerItem(it)], bright(it.color)));
   }
-
-  if (opts.answers !== 'none') {
-    deck.section({ kicker: 'Desempate', title: 'Resposta da aproximação', color: approxColor });
-    const p = deck.reveal(qz.approximation);
-    if (opts.notes) p.s.addNotes(noteLines(qz.approximation).join('\n'));
-  }
-  return pptx;
+  if (opts.answers !== 'none') tiebreakSlides(deck, [...plan.start, ...plan.end], opts.notes);
+  return deck.pptx;
 }
 
 async function exportPptx(qz) {

@@ -55,25 +55,23 @@
       <ul id="warnings"></ul>
     </section>
 
-    <section class="specials">
-      <div class="special-card" id="card-approx" tabindex="0"></div>
-      <div class="special-card" id="card-madeira" tabindex="0"></div>
-      <div class="special-card" id="card-guilhotina" tabindex="0"></div>
-    </section>
-
     <div class="toolbar">
       <div class="segmented" role="group" aria-label="Vista">
         <button id="view-themes" type="button" aria-pressed="true">Por tema</button>
         <button id="view-order" type="button" aria-pressed="false">Ordem do quiz</button>
+        <button id="view-config" type="button" aria-pressed="false">⚙ Configurar</button>
       </div>
       <span id="view-hint" class="hint"></span>
       <div class="toolbar-actions">
-        <select id="quiz-size" aria-label="Número de perguntas do quiz" title="Perguntas temáticas (mais a aproximação, a Madeira e a guilhotina)"></select>
         <button id="btn-fill" type="button" title="Preencher com perguntas aleatórias do banco">🎲 Preencher</button>
-        <button id="btn-shuffle" type="button" title="Ordem aleatória sem repetir o tema em 5 perguntas seguidas">🔀 Baralhar ordem</button>
+        <button id="btn-shuffle" type="button" title="Ordem aleatória, segundo a regra de repetição de temas">🔀 Baralhar ordem</button>
         <button id="btn-undo" type="button" class="icon" disabled>↶</button>
       </div>
     </div>
+
+    <section id="specials-wrap" class="specials-wrap">
+      <div id="specials" class="specials"></div>
+    </section>
 
     <section id="grid-wrap" class="grid-wrap">
       <div id="grid" class="grid"></div>
@@ -83,25 +81,19 @@
       <div class="ov-bar">
         <label class="inline-label">Ordem
           <select id="ov-mode">
-            <option value="themes">Agrupada por tema (8 rondas)</option>
+            <option value="themes">Agrupada por tema (uma ronda por tema)</option>
             <option value="mixed">Misturada</option>
           </select>
         </label>
-        <label id="ov-size-wrap" class="inline-label">Perguntas por ronda
-          <select id="ov-size">
-            <option value="6">6</option>
-            <option value="8">8</option>
-            <option value="12">12</option>
-            <option value="16">16</option>
-            <option value="24">24</option>
-            <option value="48">48</option>
-            <option value="96">96</option>
-          </select>
+        <label id="ov-size-wrap" class="inline-label">Rondas
+          <select id="ov-rounds-count"></select>
         </label>
         <span id="ov-status" class="ov-status"></span>
       </div>
       <div id="ov-rounds"></div>
     </section>
+
+    <section id="config-view" class="config-view" hidden></section>
   </main>
 
   <div id="toast" class="toast" role="status" hidden></div>
@@ -236,8 +228,12 @@
 
             <div class="checks">
               <label class="check"><input type="checkbox" id="ed-verified"> Resposta verificada</label>
-              <label class="check" id="ed-porto-wrap"><input type="checkbox" id="ed-porto"> Sobre o Porto</label>
             </div>
+
+            <label>Etiquetas <small>separadas por vírgulas, para as regras de verificação</small>
+              <div id="ed-tag-chips" class="tag-chips"></div>
+              <input id="ed-tags" placeholder="ex. Porto, Madeira">
+            </label>
           </aside>
         </div>
       </div>
@@ -268,7 +264,7 @@
           <span><strong>Substituir todas</strong><small>Sorteia um quiz novo (podes desfazer).</small></span>
         </label>
       </div>
-      <label class="check"><input type="checkbox" id="fill-specials" checked> Incluir a aproximação, a Madeira e a guilhotina</label>
+      <label class="check"><input type="checkbox" id="fill-specials" checked> Incluir as perguntas especiais</label>
       <ul class="fill-rules">
         <li id="fill-rule-mix"></li>
         <li id="fill-rule-match"></li>
@@ -323,20 +319,12 @@
       <div class="row">
         <label class="grow">Ordem das perguntas
           <select id="ex-mode">
-            <option value="themes">Por tema (8 rondas)</option>
+            <option value="themes">Por tema (uma ronda por tema)</option>
             <option value="mixed">Misturada</option>
           </select>
         </label>
-        <label id="ex-size-wrap">Perguntas por ronda
-          <select id="ex-size">
-            <option value="6">6</option>
-            <option value="8">8</option>
-            <option value="12">12</option>
-            <option value="16">16</option>
-            <option value="24">24</option>
-            <option value="48">48</option>
-            <option value="96">96</option>
-          </select>
+        <label id="ex-size-wrap">Rondas
+          <select id="ex-size"></select>
         </label>
       </div>
       <div id="ex-order" class="order-preview"></div>
@@ -370,6 +358,7 @@
   <script src="js/export.js"></script>
   <script src="js/bank.js"></script>
   <script src="js/arrange.js"></script>
+  <script src="js/config.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

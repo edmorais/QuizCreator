@@ -14,27 +14,28 @@ let bankNorm = new Map();   // id → texto normalizado (para igualdade)
 let priorCache = new Map();
 let bankTarget = null;      // slot a preencher quando o banco é aberto a partir do editor
 
-const SPECIALS = [APPROX, MADEIRA, GUILHOTINA];
+const FIXED_CATEGORIES = [APPROX, MADEIRA, GUILHOTINA];
 
-function themeIds() { return [...SPECIALS.map(s => s.id), ...THEMES.map(t => t.id)]; }
-
-function themeInfo(id) {
-  const special = SPECIALS.find(s => s.id === id);
-  if (special) return special;
-  const t = THEMES.findIndex(th => th.id === id);
-  return { ...THEMES[t], name: quiz.themes[t] ? quiz.themes[t].name : THEMES[t].name };
+// Nome e cor de uma categoria do banco: tema do quiz, especial, catálogo ou o que ficou guardado na entrada.
+function themeInfo(id, entry) {
+  const theme = [...quiz.themes, ...quiz.parked].find(t => t.id === id);
+  if (theme) return theme;
+  const sp = quiz.specials.find(s => specialBankId(s) === id);
+  if (sp) return { id, name: sp.name, color: sp.color };
+  const known = FIXED_CATEGORIES.find(s => s.id === id) || catalogTheme(id);
+  if (known) return known;
+  const stored = entry || bank.find(e => e.theme === id && e.themeName);
+  return { id, name: stored && stored.themeName ? stored.themeName : id.replace(/^(local|extra):/, ''), color: stored && stored.themeColor ? stored.themeColor : '#6b7280' };
 }
 
 function themeIdOfRef(ref) {
-  if (ref.kind === 'approx') return APPROX.id;
-  if (ref.kind === 'madeira') return MADEIRA.id;
-  if (ref.kind === 'guilhotina') return GUILHOTINA.id;
-  return THEMES[ref.t].id;
+  if (ref.kind === 'special') return specialBankId(specialById(ref.id));
+  return quiz.themes[ref.t].id;
 }
 
 function normalizeEntry(e) {
   if (!e || typeof e !== 'object' || !e.q) return null;
-  const theme = themeIds().includes(e.theme) ? e.theme : THEMES[0].id;
+  const theme = str(e.theme) || CATALOG[0].id;
   const q = normalizeQuestion(e.q, kindOfTheme(theme));
   const id = str(e.id) || q.id;
   q.id = id;
@@ -42,7 +43,10 @@ function normalizeEntry(e) {
     ? e.uses.filter(u => u && typeof u === 'object').map(u => ({ title: str(u.title), date: str(u.date) }))
     : [];
   const now = new Date().toISOString();
-  return { id, theme, q, origin: str(e.origin), createdAt: str(e.createdAt) || now, updatedAt: str(e.updatedAt) || now, uses };
+  return {
+    id, theme, themeName: str(e.themeName), themeColor: str(e.themeColor), q, origin: str(e.origin),
+    createdAt: str(e.createdAt) || now, updatedAt: str(e.updatedAt) || now, uses,
+  };
 }
 
 // Junta ao banco as perguntas da base incluída (banco/base.js) que ainda lá não estão.
@@ -121,6 +125,10 @@ function upsertEntry(themeId, q, use, now) {
   }
   e.q = structuredClone({ ...q, id: e.id });
   e.theme = themeId;
+  // Guarda o nome e a cor, para a categoria se reconhecer noutros quizzes.
+  const info = themeInfo(themeId);
+  e.themeName = info.name;
+  e.themeColor = info.color;
   if (e.origin === 'base') e.origin = 'editada'; // já não é removida se sair da base
   e.updatedAt = now;
   if (use && !e.uses.some(u => u.title === use.title && u.date === use.date)) e.uses.push(use);
@@ -130,10 +138,8 @@ function upsertEntry(themeId, q, use, now) {
 
 function quizSlots(qz) {
   return [
-    { themeId: APPROX.id, q: qz.approximation },
-    { themeId: MADEIRA.id, q: qz.madeira },
-    ...qz.themes.flatMap((t, i) => t.questions.map(q => ({ themeId: THEMES[i].id, q }))),
-    { themeId: GUILHOTINA.id, q: qz.guilhotina },
+    ...enabledSpecials(qz).map(sp => ({ themeId: specialBankId(sp), q: sp.q })),
+    ...qz.themes.flatMap(t => t.questions.map(q => ({ themeId: t.id, q }))),
   ];
 }
 
@@ -168,14 +174,16 @@ async function saveToBank(ref) {
 function useEntry(entry) {
   let ref = bankTarget;
   if (!ref) {
-    if (entry.theme === APPROX.id) ref = { kind: 'approx' };
-    else if (entry.theme === MADEIRA.id) ref = { kind: 'madeira' };
-    else if (entry.theme === GUILHOTINA.id) ref = { kind: 'guilhotina' };
-    else {
-      const t = THEMES.findIndex(th => th.id === entry.theme);
+    const sp = enabledSpecials(quiz).find(s => specialBankId(s) === entry.theme);
+    const t = quiz.themes.findIndex(th => th.id === entry.theme);
+    if (sp) ref = { kind: 'special', id: sp.id };
+    else if (t >= 0) {
       const q = quiz.themes[t].questions.findIndex(x => !isStarted(x));
       if (q < 0) { alert(`Não há células vazias em “${quiz.themes[t].name}”. Abre uma pergunta e usa “Procurar no banco” para a substituir.`); return; }
       ref = { kind: 'theme', t, q };
+    } else {
+      alert(`“${themeInfo(entry.theme, entry).name}” não faz parte deste quiz. Abre uma pergunta e usa “Procurar no banco” para a pôr noutro lugar.`);
+      return;
     }
   }
   // A aproximação e a guilhotina têm formato próprio: só podem ir para o seu lugar.
@@ -240,7 +248,7 @@ let randomSkipped = new Set();
 
 function randomCandidates(ref) {
   const theme = themeIdOfRef(ref);
-  const diff = ref.kind === 'approx' ? '' : $('#ed-random-diff').value;
+  const diff = slotKind(ref) === 'approx' ? '' : $('#ed-random-diff').value;
   const inQuiz = new Set(allRefs().map(r => getSlot(r).id));
   return bank.filter(e => e.theme === theme && e.uses.length === 0 && !inQuiz.has(e.id)
     && (!diff || e.q.difficulty === diff));
@@ -251,7 +259,7 @@ function onEditorOpened(ref) {
   randomPick = null;
   randomSkipped = new Set();
   $('#ed-random-preview').hidden = true;
-  $('#ed-random-diff').hidden = ref.kind === 'approx';
+  $('#ed-random-diff').hidden = slotKind(ref) === 'approx';
   $('#ed-undo').hidden = undoFor(ref) < 0;
   updateRandomCount();
 }
@@ -342,6 +350,7 @@ async function deleteEntry(entry) {
 
 function openBank(target = null) {
   bankTarget = target;
+  renderBankThemes();
   const box = $('#bank-target');
   box.hidden = !target;
   if (target) {
@@ -370,7 +379,7 @@ function renderBank() {
 
   $('#bank-count').textContent = `${matches.length} de ${bank.length}`;
   const items = matches.slice(0, BANK_LIST_LIMIT).map(e => {
-    const info = themeInfo(e.theme);
+    const info = themeInfo(e.theme, e);
     const last = e.uses[e.uses.length - 1];
     const usage = e.uses.length
       ? `usada ${e.uses.length}× · última: ${last.title} (${formatDate(last.date)})`
@@ -395,10 +404,21 @@ function renderBank() {
   $('#bank-list').replaceChildren(...items);
 }
 
-$('#bank-theme').replaceChildren(
-  el('option', { value: '' }, 'Todos os temas'),
-  ...[...SPECIALS, ...THEMES].map(t => el('option', { value: t.id }, t.name)),
-);
+// Filtro de temas: os do quiz e as especiais primeiro, depois as outras categorias que o banco tenha.
+function renderBankThemes() {
+  const select = $('#bank-theme');
+  const value = select.value;
+  const ids = [
+    ...enabledSpecials(quiz).map(specialBankId),
+    ...quiz.themes.map(t => t.id),
+    ...[...new Set(bank.map(e => e.theme))].sort(),
+  ];
+  select.replaceChildren(
+    el('option', { value: '' }, 'Todos os temas'),
+    ...[...new Set(ids)].map(id => el('option', { value: id }, themeInfo(id).name)),
+  );
+  select.value = ids.includes(value) ? value : '';
+}
 ['#bank-search', '#bank-theme', '#bank-status'].forEach(sel => $(sel).addEventListener('input', renderBank));
 $('#btn-bank').onclick = () => openBank(null);
 $('#bank-close').onclick = () => $('#bank').close();
