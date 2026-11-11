@@ -14,25 +14,40 @@ const DEFAULT_SPREAD = 5;    // não repetir o tema em 5 perguntas seguidas
 
 // Temas com perguntas na base (podem ligar-se e desligar-se).
 const CATALOG = [
-  { id: 'historia',   name: 'História',                                  color: '#b5562b' },
-  { id: 'ciencias',   name: 'Ciências Exatas',                           color: '#2f6db5' },
-  { id: 'desporto',   name: 'Desporto e Jogos',                          color: '#2e8b57' },
-  { id: 'musica',     name: 'Música, Cinema e TV',                       color: '#8e44ad' },
-  { id: 'arte',       name: 'Arte e Design',                             color: '#c08a00' },
-  { id: 'literatura', name: 'Literatura, Filosofia e Ciências Sociais',  color: '#8b5a2b' },
-  { id: 'geografia',  name: 'Locais e Geografia',                        color: '#16808a' },
+  { id: 'historia',   name: 'História',                                  color: '#f37373' },
+  { id: 'ciencias',   name: 'Ciências Exatas',                           color: '#75b4ff' },
+  { id: 'desporto',   name: 'Desporto e Jogos',                          color: '#7ae6b4' },
+  { id: 'musica',     name: 'Música, Cinema e TV',                       color: '#e949a4' },
+  { id: 'arte',       name: 'Arte e Design',                             color: '#ffe46b' },
+  { id: 'literatura', name: 'Literatura, Filosofia e Ciências Sociais',  color: '#8a2ce2' },
+  { id: 'geografia',  name: 'Locais e Geografia',                        color: '#49d4c6' },
 ];
 // Atualidade é um tema personalizado que vem ligado por omissão.
-const ATUALIDADE = { id: 'atualidade', name: 'Atualidade', color: '#c0392b', custom: true };
+const ATUALIDADE = { id: 'atualidade', name: 'Atualidade', color: '#ff7919', custom: true };
 const DEFAULT_THEMES = ['historia', 'ciencias', 'desporto', 'musica', 'arte', 'literatura', 'atualidade', 'geografia'];
 
 // Cores para temas e perguntas extra criados pelo utilizador.
-const CUSTOM_COLORS = ['#c0392b', '#d35400', '#7d6608', '#1e8449', '#117a65', '#1f618d', '#6c3483', '#a93226', '#b9770e', '#5d6d7e', '#943126', '#0e6655'];
+const CUSTOM_COLORS = ['#ff7919', '#ef5d8d', '#824dff', '#33ddff', '#f0be28', '#c33528', '#a1da3e', '#2c416d', '#f37373', '#49d4c6', '#e949a4', '#75b4ff'];
 
-const APPROX = { id: 'approx', name: 'Aproximação', color: '#5b5f97' };
-const MADEIRA = { id: 'madeira', name: 'Madeira', color: '#0f6e5a' };
-const GUILHOTINA = { id: 'guilhotina', name: 'Guilhotina', color: '#b8336a' };
-const EXTRA_COLOR = '#c46f1b';
+const APPROX = { id: 'approx', name: 'Aproximação', color: '#0ea2e7' };
+const MADEIRA = { id: 'madeira', name: 'Madeira', color: '#24c278' };
+const GUILHOTINA = { id: 'guilhotina', name: 'Guilhotina', color: '#a1da3e' };
+const EXTRA_COLOR = '#2c416d';
+
+// Cores de origem anteriores à paleta BoldKit: passam para as novas ao abrir o quiz.
+// Uma cor escolhida à mão (que não esteja nesta lista) fica como está.
+const OLD_COLORS = {
+  '#b5562b': '#f37373', '#2f6db5': '#75b4ff', '#2e8b57': '#7ae6b4', '#8e44ad': '#e949a4',
+  '#c08a00': '#ffe46b', '#8b5a2b': '#8a2ce2', '#16808a': '#49d4c6', '#c0392b': '#ff7919',
+  '#5b5f97': '#0ea2e7', '#0f6e5a': '#24c278', '#b8336a': '#a1da3e', '#c46f1b': '#2c416d',
+  '#d35400': '#ef5d8d', '#7d6608': '#824dff', '#1e8449': '#33ddff', '#117a65': '#f0be28',
+  '#1f618d': '#c33528', '#6c3483': '#a1da3e', '#a93226': '#2c416d', '#b9770e': '#f37373',
+  '#5d6d7e': '#49d4c6', '#943126': '#e949a4', '#0e6655': '#75b4ff',
+};
+function validColor(value, fallback) {
+  const c = str(value).toLowerCase();
+  return /^#[0-9a-f]{6}$/.test(c) ? (OLD_COLORS[c] || c) : fallback;
+}
 const GUILHOTINA_WORDS = 4;
 const GUILHOTINA_PROMPT = 'Que palavra liga estas quatro?';
 
@@ -181,6 +196,7 @@ function isPermutation(arr, n) {
 
 function normalizeMedia(m) {
   if (!m || typeof m !== 'object' || !MEDIA_KINDS[m.kind]) return null;
+  if (m.placeholder) return placeholderMedia();
   const data = str(m.data).startsWith('data:') ? str(m.data) : '';
   const url = str(m.url);
   if (!data && !url) return null;
@@ -231,7 +247,7 @@ function normalizeTheme(src, perTheme, notes) {
   const theme = {
     id: str(src.id) || `custom-${uid().slice(0, 8)}`,
     name: str(src.name) || (info ? info.name : 'Tema'),
-    color: /^#[0-9a-f]{6}$/i.test(str(src.color)) ? str(src.color) : (info ? info.color : CUSTOM_COLORS[0]),
+    color: validColor(src.color, info ? info.color : CUSTOM_COLORS[0]),
     custom: info ? !!info.custom : true,
   };
   const qs = Array.isArray(src.questions) ? src.questions : [];
@@ -248,7 +264,7 @@ function normalizeSpecial(src) {
     id: str(src.id) || `extra-${uid().slice(0, 8)}`,
     kind,
     name: str(src.name) || (kind === 'approx' ? APPROX.name : kind === 'guilhotina' ? GUILHOTINA.name : 'Pergunta extra'),
-    color: /^#[0-9a-f]{6}$/i.test(str(src.color)) ? str(src.color) : EXTRA_COLOR,
+    color: validColor(src.color, EXTRA_COLOR),
     enabled: src.enabled !== false,
     position: src.position === 'end' ? 'end' : 'start',
     numbered: !!src.numbered,
@@ -542,11 +558,16 @@ function mediaKindFromMime(mime) {
   return MEDIA_KINDS[k] ? k : null;
 }
 
+// Imagem por definir: reserva o espaço no slide, e o PowerPoint leva uma imagem
+// provisória que se substitui depois (botão direito › Alterar Imagem).
+function placeholderMedia() { return { kind: 'image', placeholder: true, name: '', mime: '', data: '', url: '' }; }
+
 function mediaSrc(m) { return m ? (m.data || m.url) : ''; }
 
 function mediaLabel(m) {
   if (!m) return '';
-  return `${MEDIA_KINDS[m.kind]}: ${m.name || m.url || 'ficheiro'}`;
+  if (m.placeholder) return 'Imagem por definir';
+  return `${MEDIA_KINDS[m.kind]}:${m.name || m.url || 'ficheiro'}`;
 }
 
 // ---------------------------------------------------------------------------

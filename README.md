@@ -35,8 +35,9 @@ Os 8 temas são: História, Ciências Exatas, Desporto e Jogos, Música, Cinema 
 - Etiquetas em cada pergunta (por exemplo, «Porto»), usadas pelas regras de verificação.
 - Tipos de pergunta: resposta aberta, escolha múltipla e correspondência (A-2, B-1…).
 - Imagem, áudio ou vídeo em cada pergunta, a partir de um ficheiro ou de um URL (incluindo YouTube).
+- «Imagem por definir»: reserva o espaço da imagem no slide, e o PowerPoint leva uma imagem provisória para substituir depois (botão direito › Alterar Imagem).
 - Perguntas de 1 ou 2 pontos, dificuldade, notas e fonte.
-- Modo claro, escuro ou automático.
+- Interface ao estilo do [BoldKit](https://boldkit.dev) (neubrutalismo), com as 14 paletas do BoldKit à escolha no botão 🎨, e modo claro, escuro ou automático. A letra é a Outfit, carregada do Google Fonts. Sem ligação, a interface usa a letra do sistema.
 
 **Banco de perguntas**
 

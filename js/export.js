@@ -190,7 +190,7 @@ function toSlidesMarkdown(qz) {
     if (q.type === 'guilhotina') lines.push('', q.words.map(w => `**${w.trim() || '?'}**`).join(' · '));
     if (q.media) {
       if (q.media.kind === 'image' && q.media.url) lines.push('', `![](${q.media.url})`);
-      else lines.push('', `_[${MEDIA_KINDS[q.media.kind]}]_`);
+      else lines.push('', `_[${q.media.placeholder ? 'Imagem por definir' : MEDIA_KINDS[q.media.kind]}]_`);
     }
     if (q.type === 'choice') lines.push('', ...q.options.map((o, i) => `${LETTERS[i]}) ${o}  `));
     if (q.type === 'match') {
@@ -279,10 +279,73 @@ function fitBox(box, ratio) {
   return { x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h };
 }
 
+// Imagem provisória, nas cores do template: fundo tracejado, moldura, uma
+// paisagem estilizada e a indicação de como a substituir no PowerPoint.
+const placeholderCache = new Map();
+function placeholderImage(T, ratio) {
+  const key = `${T.id}:${ratio.toFixed(3)}`;
+  if (placeholderCache.has(key)) return placeholderCache.get(key);
+  const W = 1600;
+  const H = Math.round(W / ratio);
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const ink = T.c.ink || '#ffffff';
+  const fade = a => ink + Math.round(a * 255).toString(16).padStart(2, '0');
+  ctx.fillStyle = fade(0.07);
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.clip();
+  ctx.strokeStyle = fade(0.06);
+  ctx.lineWidth = 14;
+  for (let x = -H; x < W + H; x += 56) { ctx.beginPath(); ctx.moveTo(x, H); ctx.lineTo(x + H, 0); ctx.stroke(); }
+  ctx.restore();
+  ctx.strokeStyle = fade(0.55);
+  ctx.lineWidth = 6;
+  ctx.setLineDash([26, 18]);
+  ctx.strokeRect(3, 3, W - 6, H - 6);
+  ctx.setLineDash([]);
+  // Ícone: moldura com sol e montanhas
+  const s = Math.min(W, H) * 0.32;
+  const cx = W / 2;
+  const cy = H / 2 - s * 0.28;
+  ctx.lineWidth = Math.max(6, s * 0.05);
+  ctx.strokeStyle = fade(0.7);
+  ctx.fillStyle = fade(0.7);
+  ctx.strokeRect(cx - s * 0.6, cy - s * 0.42, s * 1.2, s * 0.84);
+  ctx.beginPath(); ctx.arc(cx + s * 0.25, cy - s * 0.15, s * 0.1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx - s * 0.52, cy + s * 0.34);
+  ctx.lineTo(cx - s * 0.18, cy - s * 0.08);
+  ctx.lineTo(cx + s * 0.04, cy + s * 0.16);
+  ctx.lineTo(cx + s * 0.2, cy + s * 0.02);
+  ctx.lineTo(cx + s * 0.52, cy + s * 0.34);
+  ctx.closePath(); ctx.fill();
+  // Texto
+  const font = (T.fonts && T.fonts.label) || 'Segoe UI';
+  const big = Math.round(Math.min(W, H) * 0.075);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = fade(0.85);
+  ctx.font = `600 ${big}px "${font}", sans-serif`;
+  ctx.fillText('Imagem por definir', cx, cy + s * 0.68);
+  ctx.fillStyle = fade(0.6);
+  ctx.font = `400 ${Math.round(big * 0.62)}px "${font}", sans-serif`;
+  ctx.fillText('Botão direito › Alterar Imagem', cx, cy + s * 0.68 + big * 1.15);
+  const url = cv.toDataURL('image/png');
+  placeholderCache.set(key, url);
+  return url;
+}
+
 // box em px (ver templates.js); o PptxGenJS trabalha em polegadas.
 async function addMediaTo(p, m, boxPx) {
   const s = p.s;
   const box = { x: boxPx.x / 96, y: boxPx.y / 96, w: boxPx.w / 96, h: boxPx.h / 96 };
+  if (m.placeholder) {
+    const place = fitBox(box, 16 / 9);
+    s.addImage({ data: pptxData(placeholderImage(p.T, place.w / place.h)), ...place, altText: 'Imagem por definir' });
+    return;
+  }
   const yt = youtubeId(m.url);
   if (yt) {
     s.addMedia({ type: 'online', link: `https://www.youtube.com/embed/${yt}`, ...fitBox(box, 16 / 9) });

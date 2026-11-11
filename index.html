@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Quiz Creator</title>
   <script>
-    // Aplicar o tema de cores antes de desenhar a página (evita o "flash").
+    // Aplicar o tema e a paleta antes de desenhar a página (evita o "flash").
     try {
-      const c = (JSON.parse(localStorage.getItem('quizcreator.prefs')) || {}).color;
-      if (c === 'light' || c === 'dark') document.documentElement.dataset.theme = c;
+      const prefs = JSON.parse(localStorage.getItem('quizcreator.prefs')) || {};
+      if (prefs.color === 'light' || prefs.color === 'dark') document.documentElement.dataset.theme = prefs.color;
+      if (/^[a-z]+$/.test(prefs.palette || '')) document.documentElement.dataset.palette = prefs.palette;
     } catch (e) {}
   </script>
+  <!-- Outfit, a letra do BoldKit. Sem ligação, usa a letra do sistema. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400..800&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -31,9 +36,14 @@
           <button id="btn-new">Novo quiz</button>
           <button id="btn-import">Importar JSON…</button>
           <button id="btn-export-json">Exportar JSON</button>
+          <button id="btn-about">Sobre e dados…</button>
         </div>
       </details>
       <button id="btn-bank" title="Banco de perguntas">Banco</button>
+      <details class="menu" id="palette-menu">
+        <summary class="btn icon" title="Paleta de cores da interface" aria-label="Paleta de cores da interface">🎨</summary>
+        <div class="menu-pop palette-pop" id="palette-list"></div>
+      </details>
       <button id="btn-theme" class="icon" type="button"></button>
       <button id="btn-export" class="primary" title="PowerPoint, guião e Markdown">Exportar apresentação</button>
       <input id="file-input" type="file" accept=".json,application/json" hidden>
@@ -208,6 +218,7 @@
               <legend>Multimédia <small>opcional</small></legend>
               <div class="media-row">
                 <button type="button" id="ed-media-file-btn">Escolher ficheiro…</button>
+                <button type="button" id="ed-media-placeholder" title="Reserva o espaço da imagem no PowerPoint, com uma imagem provisória para substituir depois">Imagem por definir</button>
                 <input id="ed-media-file" type="file" accept="image/*,audio/*,video/*" hidden>
                 <label id="ed-media-kind-wrap" class="inline">
                   <select id="ed-media-kind" aria-label="Tipo de multimédia">
@@ -248,6 +259,32 @@
           <button type="button" id="ed-bank-save" title="Guardar como pergunta de reserva">Guardar no banco</button>
           <button type="button" id="ed-clear" class="danger">Limpar</button>
         </div>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Apresentação (aparece na primeira vez; volta a abrir em Ficheiro › Sobre e dados) -->
+  <dialog id="welcome" class="small welcome" aria-labelledby="welcome-title">
+    <form method="dialog">
+      <h3 id="welcome-title">Boas-vindas ao Quiz Creator</h3>
+      <p class="welcome-lead">Prepara o quiz da próxima noite: escreve ou sorteia as perguntas, organiza-as por tema e exporta a apresentação em PowerPoint.</p>
+      <ol class="welcome-steps">
+        <li><strong>Escrever:</strong> clica numa célula da grelha, ou usa <b>🎲 Preencher</b> para sortear perguntas do banco.</li>
+        <li><strong>Ajustar:</strong> em <b>⚙ Configurar</b> escolhes os temas, as perguntas especiais e o tamanho do quiz.</li>
+        <li><strong>Apresentar:</strong> <b>Exportar apresentação</b> cria o PowerPoint, com 11 templates à escolha.</li>
+      </ol>
+      <section class="welcome-data">
+        <h4>🔒 Os teus dados ficam só neste browser</h4>
+        <p>Os quizzes e o banco de perguntas ficam gravados <strong>apenas no browser deste dispositivo</strong>. Nada do que escreves é enviado para um servidor. Por isso, não aparecem noutro computador nem noutro browser, e perdem-se se limpares os dados de navegação.</p>
+        <p>Para continuar noutro dispositivo, ou para ter uma cópia de segurança, exporta os ficheiros e importa-os do outro lado:</p>
+        <ul>
+          <li><strong>Quiz:</strong> <b>Ficheiro › Exportar JSON</b>, e depois <b>Ficheiro › Importar JSON</b>.</li>
+          <li><strong>Banco de perguntas</strong> (com o registo das perguntas já usadas): <b>Banco › Exportar banco</b>, e depois <b>Banco › Importar banco</b>.</li>
+        </ul>
+      </section>
+      <footer class="ed-foot">
+        <span class="muted">Podes voltar a ver isto em Ficheiro › Sobre e dados.</span>
+        <button value="ok" class="primary" autofocus>Começar</button>
       </footer>
     </form>
   </dialog>

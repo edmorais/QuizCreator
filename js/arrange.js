@@ -47,6 +47,49 @@ $('#btn-theme').onclick = () => {
 };
 
 // ---------------------------------------------------------------------------
+// Paleta da interface (as 14 predefinições do BoldKit; as cores estão no CSS)
+// ---------------------------------------------------------------------------
+
+const PALETTES = [
+  { id: 'coral', name: 'Coral', swatch: ['#f37373', '#4fd1c2', '#ffe46b'] },
+  { id: 'purple', name: 'Purple', swatch: ['#8a2ce2', '#e84aa5', '#0ea2e7'] },
+  { id: 'forest', name: 'Forest', swatch: ['#24c278', '#a1da3e', '#ffd633'] },
+  { id: 'ocean', name: 'Ocean', swatch: ['#0ea2e7', '#4fd1c2', '#7ae6b4'] },
+  { id: 'sunset', name: 'Sunset', swatch: ['#ff6a24', '#e84aa5', '#ffd633'] },
+  { id: 'mono', name: 'Mono', swatch: ['#e6e6e6', '#bfbfbf', '#ffdd4d'] },
+  { id: 'neon', name: 'Neon', swatch: ['#ff00c8', '#00ffff', '#ffff00'] },
+  { id: 'electric', name: 'Electric', swatch: ['#824dff', '#00ffd0', '#ffc61a'] },
+  { id: 'candy', name: 'Candy', swatch: ['#ef5d8d', '#a35ce0', '#33ddff'] },
+  { id: 'cyberpunk', name: 'Cyberpunk', swatch: ['#3dff14', '#ff2e63', '#00c3ff'] },
+  { id: 'retro', name: 'Retro', swatch: ['#e9670b', '#4bb3a7', '#f6c945'] },
+  { id: 'pastel', name: 'Pastel', swatch: ['#ffa3bd', '#a8e6cc', '#c6b9ec'] },
+  { id: 'gold', name: 'Gold', swatch: ['#f0be28', '#2c416d', '#eb9c19'] },
+  { id: 'cherry', name: 'Cherry', swatch: ['#c33528', '#23503a', '#f29b13'] },
+];
+
+function applyPalette(id) {
+  const palette = PALETTES.find(p => p.id === id) || PALETTES[0];
+  document.documentElement.dataset.palette = palette.id;
+  $('#palette-list').replaceChildren(...PALETTES.map(p => el('button', {
+    type: 'button', class: p.id === palette.id ? 'current' : '', 'aria-pressed': String(p.id === palette.id),
+    onclick: () => { savePref('palette', p.id); applyPalette(p.id); $('#palette-menu').open = false; },
+  }, el('span', { class: 'swatches', 'aria-hidden': 'true' }, ...p.swatch.map(c => el('i', { style: `background:${c}` }))), p.name)));
+}
+
+applyPalette(loadPrefs().palette);
+
+// ---------------------------------------------------------------------------
+// Apresentação: na primeira vez que se abre a aplicação, e em Ficheiro › Sobre e dados
+// ---------------------------------------------------------------------------
+
+$('#welcome').addEventListener('close', () => savePref('welcomed', true));
+$('#btn-about').onclick = () => {
+  $('#btn-about').closest('details').open = false;
+  $('#welcome').showModal();
+};
+if (!loadPrefs().welcomed) $('#welcome').showModal();
+
+// ---------------------------------------------------------------------------
 // Avisos breves (toast), com ação opcional
 // ---------------------------------------------------------------------------
 

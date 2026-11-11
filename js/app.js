@@ -142,7 +142,7 @@ function badges(q) {
     q.difficulty ? el('span', { class: 'dots', title: DIFFICULTY[q.difficulty] }, '●'.repeat(+q.difficulty)) : null,
     q.type === 'choice' ? el('span', { class: 'badge', title: TYPES.choice }, 'ABC') : null,
     q.type === 'match' ? el('span', { class: 'badge', title: TYPES.match }, 'A–1') : null,
-    q.media ? el('span', { class: 'badge', title: mediaLabel(q.media) }, MEDIA_ICONS[q.media.kind]) : null,
+    q.media ? el('span', { class: q.media.placeholder ? 'badge placeholder' : 'badge', title: mediaLabel(q.media) }, MEDIA_ICONS[q.media.kind]) : null,
     q.points === 2 ? el('span', { class: 'badge points' }, '2 pts') : null,
     ...(q.tags || []).map(t => el('span', { class: 'badge tag' }, t)),
     used ? el('span', { class: 'badge used', title: 'Já usada (ou parecida com uma usada) num quiz anterior' }, '↺') : null,
@@ -299,6 +299,8 @@ function validate() {
     const unverified = all.filter(q => isFilled(q) && !q.verified).length;
     if (unverified) warnings.push(`${unverified} respostas por verificar`);
   }
+  const placeholders = all.filter(q => q.media && q.media.placeholder).length;
+  if (placeholders) warnings.push(placeholders === 1 ? '1 imagem por definir' : `${placeholders} imagens por definir`);
 
   if (checks.reused) {
     const reused = all.filter(q => questionText(q).trim() && priorUses(q).length).length;
@@ -498,9 +500,17 @@ function renderDuplicateWarning(q) {
 
 function renderMediaPreview(m) {
   const box = $('#ed-media-preview');
-  $('#ed-media-kind-wrap').hidden = !m;
+  $('#ed-media-kind-wrap').hidden = !m || !!m.placeholder;
   $('#ed-media-remove').hidden = !m;
+  $('#ed-media-placeholder').hidden = !!m;
   if (!m) { box.replaceChildren(); return; }
+  if (m.placeholder) {
+    box.replaceChildren(
+      el('div', { class: 'media-placeholder' }, el('span', { 'aria-hidden': 'true' }, '🖼'), 'Imagem por definir'),
+      el('div', { class: 'media-name' }, 'O PowerPoint leva uma imagem provisória neste espaço. Para a trocar: botão direito › Alterar Imagem. Também podes escolher já um ficheiro ou um URL.'),
+    );
+    return;
+  }
   $('#ed-media-kind').value = m.kind;
   const src = mediaSrc(m);
   const yt = youtubeId(m.url);
@@ -573,6 +583,14 @@ $('#ed-media-url').addEventListener('change', e => {
   save();
   render();
 });
+$('#ed-media-placeholder').onclick = () => {
+  const q = getSlot(current);
+  q.media = placeholderMedia();
+  $('#ed-media-url').value = '';
+  syncEditorSections(q);
+  save();
+  render();
+};
 $('#ed-media-kind').addEventListener('change', e => {
   const q = getSlot(current);
   if (q.media) q.media.kind = e.target.value;

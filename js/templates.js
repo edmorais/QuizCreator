@@ -17,10 +17,20 @@ const ANSWER_GREEN = '#4ade80'; // destaque das respostas, legível em todos os 
 
 const hex = c => c.replace('#', '').toUpperCase();
 
-// Clareia as cores dos temas para se lerem bem sobre fundos escuros.
-function bright(color, amount = 0.38) {
+// Luminância relativa (0 = preto, 1 = branco).
+function luminance(color) {
   const n = parseInt(color.slice(1), 16);
-  const mix = v => Math.round(v + (255 - v) * amount).toString(16).padStart(2, '0');
+  const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * lin(n >> 16) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+}
+
+// Clareia as cores escuras dos temas para se lerem bem sobre fundos escuros.
+// As cores já claras (como as da paleta BoldKit) ficam quase como estão,
+// para não perderem o tom.
+function bright(color, amount = 0.38) {
+  const k = amount * Math.max(0, Math.min(1, (0.4 - luminance(color)) / 0.3));
+  const n = parseInt(color.slice(1), 16);
+  const mix = v => Math.round(v + (255 - v) * k).toString(16).padStart(2, '0');
   return `#${mix(n >> 16)}${mix((n >> 8) & 255)}${mix(n & 255)}`;
 }
 
@@ -721,7 +731,8 @@ const TEMPLATE_LIST = [
         p.text(w.trim() || '?', [x - 135, i % 2 ? 490 : 350, 270, 90], { size, align: 'center', valign: 'middle' });
       });
       p.oval([1074, 414, 92, 92], { fill: '#ffffff', line: color, lineW: 7 });
-      p.text('?', [1074, 414, 92, 92], { size: 60, color, align: 'center', valign: 'middle' });
+      // Sobre o círculo branco, uma cor clara não se lê: usa-se o fundo escuro.
+      p.text('?', [1074, 414, 92, 92], { size: 60, color: luminance(color) > 0.35 ? this.c.bg : color, align: 'center', valign: 'middle' });
     },
   },
 
